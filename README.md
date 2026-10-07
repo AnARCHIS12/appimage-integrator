@@ -1,8 +1,15 @@
 # Aurémi — AppImage Integrator
 
+[![Latest release](https://img.shields.io/github/v/release/AnARCHIS12/appimage-integrator?style=flat-square&color=dc2626)](https://github.com/AnARCHIS12/appimage-integrator/releases/latest)
+[![Release build](https://img.shields.io/github/actions/workflow/status/AnARCHIS12/appimage-integrator/release.yml?style=flat-square&label=build)](https://github.com/AnARCHIS12/appimage-integrator/actions/workflows/release.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-black?style=flat-square)](LICENSE)
+![Linux AMD64 and ARM64](https://img.shields.io/badge/Linux-AMD64%20%7C%20ARM64-black?style=flat-square&logo=linux&logoColor=white)
+
 **Aurémi** turns a double-click on an AppImage into a clean desktop installation. It stays out of the way during normal use; only the initial setup displays a small confirmation dialog.
 
-![Aurémi logo](assets/auremi-logo.png)
+<p align="center">
+  <img src="assets/auremi-logo.png" alt="Aurémi logo" width="220">
+</p>
 
 It follows Linux/Freedesktop standards and works with KDE Plasma, GNOME, Cinnamon, XFCE, MATE, LXQt, and most other Linux desktop environments.
 
