@@ -1,0 +1,59 @@
+name: Bug report
+description: Report a reproducible problem with Aurémi
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem. Do not include credentials or private data.
+  - type: input
+    id: version
+    attributes:
+      label: Aurémi version
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Linux environment
+      description: Distribution, version, desktop environment, and CPU architecture
+      placeholder: "Fedora 44, KDE Plasma, AMD64"
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Problem
+      description: What happened, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Download...
+        2. Double-click...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or additional context
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I tested the latest Aurémi release.
+          required: true
+        - label: I searched for an existing issue.
+          required: true
+        - label: This report does not contain credentials or private data.
+          required: true
+

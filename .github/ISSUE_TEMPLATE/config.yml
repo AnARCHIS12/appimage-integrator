@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Private security report
+    url: https://github.com/AnARCHIS12/appimage-integrator/security/advisories/new
+    about: Report vulnerabilities privately instead of opening a public issue.
+

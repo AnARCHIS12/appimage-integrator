@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest an improvement for Aurémi
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What is difficult or impossible today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the user-facing result rather than only the implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: input
+    id: environment
+    attributes:
+      label: Relevant Linux environment
+      placeholder: "Distribution, desktop environment, architecture"
+

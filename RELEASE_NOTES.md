@@ -1,25 +1,25 @@
 # Aurémi 0.1.0
 
-Première version publique d’Aurémi, un intégrateur silencieux d’AppImage pour Linux.
+The first public release of Aurémi, a lightweight AppImage integrator for Linux.
 
-## Points principaux
+## Highlights
 
-- Installation initiale par double-clic, avec une petite boîte de dialogue native.
-- Aucun terminal et aucun mot de passe administrateur pour l’installation utilisateur.
-- Intégration automatique des AppImage au menu des applications.
-- Extraction du nom et de l’icône sans lancer l’AppImage.
-- Création facultative d’un raccourci sur le Bureau.
-- Conservation systématique du fichier téléchargé d’origine.
-- Commandes de liste et de désinstallation.
-- Binaires statiques pour Linux x86-64 et ARM64.
-- Compatibilité KDE Plasma, GNOME, Cinnamon, XFCE, MATE, LXQt et autres bureaux Freedesktop.
+- Initial setup through a small native dialog.
+- No terminal or administrator password required for per-user installation.
+- Automatic AppImage integration into the application menu.
+- Application name and icon extraction without launching the AppImage.
+- Optional desktop shortcuts.
+- Original downloaded files are always preserved.
+- Commands to list and remove managed applications.
+- Statically linked Linux binaries for AMD64 and ARM64.
+- Support for KDE Plasma, GNOME, Cinnamon, XFCE, MATE, LXQt, and other Freedesktop-compatible environments.
 
-## Quel fichier télécharger ?
+## Downloads
 
-- PC Intel ou AMD 64 bits : `Auremi-Installer-linux-amd64.tar.gz`
-- Machine ARM 64 bits : `Auremi-Installer-linux-arm64.tar.gz`
+- **Most 64-bit Intel/AMD computers:** `Auremi-Installer-linux-amd64.tar.gz`
+- **64-bit ARM computers:** `Auremi-Installer-linux-arm64.tar.gz`
 
-Extrayez l’archive, puis double-cliquez sur l’exécutable Aurémi qu’elle contient.
+Extract the appropriate archive, then double-click the Aurémi installer inside it.
 
-Les empreintes SHA-256 sont fournies dans `SHA256SUMS`.
+Use `SHA256SUMS` to verify downloaded assets.
 
