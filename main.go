@@ -32,7 +32,7 @@ import (
 const (
 	programName = "appimage-integrator"
 	productName = "Aurémi"
-	version     = "0.3.3"
+	version     = "0.3.4"
 	handlerID   = "appimage-integrator-handler.desktop"
 	launcherID  = "io.github.anarchis12.auremi.desktop"
 	metainfoID  = "io.github.anarchis12.auremi.metainfo.xml"
@@ -141,10 +141,7 @@ Integration never launches the AppImage and never deletes the source file.
 }
 
 func welcomeCommand() error {
-	message := "Aurémi is ready.\n\nTo install an AppImage:\n1. Download the .AppImage file.\n2. Double-click it.\n3. Aurémi adds it to your application menu and desktop.\n\nThe original downloaded file is always preserved."
-	if strings.HasPrefix(strings.ToLower(os.Getenv("LANG")), "fr") {
-		message = "Aurémi est prêt.\n\nPour installer une AppImage :\n1. Téléchargez le fichier .AppImage.\n2. Double-cliquez dessus.\n3. Aurémi l’ajoute au menu des applications et au Bureau.\n\nLe fichier téléchargé d’origine est toujours conservé."
-	}
+	message := fmt.Sprintf("Aurémi %s\n\nTo install an AppImage:\n1. Download the .AppImage file.\n2. Double-click it.\n3. Aurémi adds it to your application menu and desktop.\n\nThe original downloaded file is always preserved.", version)
 	if os.Getenv("AUREMI_NO_DIALOG") == "1" {
 		fmt.Println(message)
 		return nil

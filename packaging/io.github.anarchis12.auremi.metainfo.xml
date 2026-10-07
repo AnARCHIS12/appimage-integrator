@@ -8,7 +8,6 @@
   <summary xml:lang="fr">Installer et intégrer des AppImage par un double-clic</summary>
   <description>
     <p>Aurémi turns downloaded AppImages into properly integrated Linux desktop applications without requiring terminal commands.</p>
-    <p xml:lang="fr">Aurémi transforme les AppImage téléchargées en applications Linux correctement intégrées, sans nécessiter de commandes dans un terminal.</p>
     <ul>
       <li>Adds applications to the application menu and desktop</li>
       <li>Extracts names and icons without launching the AppImage</li>
@@ -31,6 +30,11 @@
     <name>AnARCHIS12</name>
   </developer>
   <releases>
+    <release version="0.3.4" date="2026-10-07">
+      <description>
+        <p>Publishes signed APT and DNF repositories with trusted package signatures and software-center metadata.</p>
+      </description>
+    </release>
     <release version="0.3.3" date="2026-10-07">
       <description>
         <p>Identifies and preserves precise AppImage application versions from desktop, AppStream, or versioned filename metadata.</p>

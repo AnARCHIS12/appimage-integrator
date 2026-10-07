@@ -178,7 +178,7 @@ func TestInstalledDesktopEntryIncludesApplicationVersion(t *testing.T) {
 	if !strings.Contains(body, "X-AppImage-Version=2.8.0\n") {
 		t.Fatalf("application version missing:\n%s", body)
 	}
-	if !strings.Contains(body, "X-AppImage-Integrator-Version=0.3.3\n") {
+	if !strings.Contains(body, "X-AppImage-Integrator-Version="+version+"\n") {
 		t.Fatalf("integrator version missing:\n%s", body)
 	}
 }

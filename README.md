@@ -40,7 +40,33 @@ Aurémi handles that workflow automatically while keeping the original download 
 
 ## Quick start
 
-### Easiest installation
+### Install from the signed repository
+
+Installing from the official repository gives the software manager a trusted publication source and the full Aurémi catalog metadata.
+
+**Ubuntu, Debian, Linux Mint:**
+
+```bash
+sudo install -d -m 0755 /etc/apt/keyrings
+curl -fsSL https://anarchis12.github.io/appimage-integrator/auremi-signing-key.asc \
+  | sudo gpg --dearmor --yes -o /etc/apt/keyrings/auremi.gpg
+curl -fsSL https://anarchis12.github.io/appimage-integrator/auremi.sources \
+  | sudo tee /etc/apt/sources.list.d/auremi.sources >/dev/null
+sudo apt update
+sudo apt install auremi
+```
+
+**Fedora:**
+
+```bash
+sudo curl -fsSL https://anarchis12.github.io/appimage-integrator/auremi.repo \
+  -o /etc/yum.repos.d/auremi.repo
+sudo dnf install auremi
+```
+
+The publication key fingerprint is `96FF EB2C 0E58 A110 10FE 8543 A684 D249 DCBB 2E24`.
+
+### Direct package download
 
 1. Open the [latest release](https://github.com/AnARCHIS12/appimage-integrator/releases/latest).
 2. Download the file for your Linux distribution and processor:
@@ -48,7 +74,7 @@ Aurémi handles that workflow automatically while keeping the original download 
    - **Fedora, openSUSE:** download the `.rpm` file, then double-click it.
 3. Select **Install** in your distribution's software manager.
 
-The native package registers Aurémi for every account on the computer. The software manager may request an administrator password, just like any other system package.
+The native package registers Aurémi for every account on the computer. A directly downloaded package is cryptographically signed, but a software manager can still label it as third-party until the repository key has been installed.
 
 After installation, Aurémi appears in the application menu with its official logo. Open it for a short getting-started guide, or double-click an AppImage immediately.
 
@@ -211,8 +237,8 @@ sha256sum -c SHA256SUMS
 Then install [Cosign](https://docs.sigstore.dev/cosign/system_config/installation/) and verify the file's signature. Replace the artifact and tag if needed:
 
 ```bash
-artifact=Auremi-0.3.3-linux-amd64.deb
-tag=v0.3.3
+artifact=Auremi-0.3.4-linux-amd64.deb
+tag=v0.3.4
 cosign verify-blob "$artifact" \
   --bundle "$artifact.sigstore.json" \
   --certificate-identity "https://github.com/AnARCHIS12/appimage-integrator/.github/workflows/release.yml@refs/tags/$tag" \
@@ -252,6 +278,7 @@ Requirements:
 - Go 1.23 or newer
 - GNU Make
 - `tar`, `sha256sum`, `dpkg-deb`, and `rpmbuild` for all release packages
+- `appstreamcli`, `appstream-compose`, `apt-ftparchive`, `createrepo_c`, `gpg`, and `xmlstarlet` for signed repositories
 
 Build and test:
 

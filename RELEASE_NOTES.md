@@ -1,15 +1,15 @@
-# Aurémi 0.3.3
+# Aurémi 0.3.4
 
-This release lets Aurémi identify the precise version of an integrated AppImage while retaining the icon and Wayland improvements from 0.3.2. Release downloads remain cryptographically signed with Sigstore.
+This release introduces official signed package repositories so Linux software centers can identify Aurémi and trust its publication source.
 
 ## Highlights
 
-- Reads the official `X-AppImage-Version` field when supplied by the publisher.
-- Falls back to matching embedded AppStream release metadata when needed.
-- Recognizes a structured version in the filename only when no authoritative metadata exists.
-- Stores the application version in `metadata.json` and the generated desktop entry.
-- Shows the detected version after integration and in the managed-application list.
-- Keeps the corrected icon selection, multiple icon resolutions, and Wayland launcher matching introduced in 0.3.2.
+- Publishes official APT and DNF repositories for AMD64 and ARM64 through GitHub Pages.
+- Signs APT release metadata, DNF repository metadata, and RPM packages with a dedicated GPG publication key.
+- Provides AppStream catalogs and cached icons to software centers.
+- Identifies the application as Aurémi, with its official logo, precise version, description, and release history.
+- Displays the installed Aurémi version in the welcome dialog and keeps its onboarding text in English.
+- Keeps the precise AppImage version detection, corrected icons, and Wayland launcher matching from earlier releases.
 - Signs every executable, installer archive, DEB, RPM, and checksum file with keyless Sigstore signing.
 - Publishes a `.sigstore.json` verification bundle beside every signed download.
 
@@ -25,4 +25,4 @@ After installation, open **Aurémi** from the application menu for a short getti
 
 Use `SHA256SUMS` to verify downloaded assets.
 
-For cryptographic provenance verification, download the matching `.sigstore.json` file and follow the Cosign command in the README. The signature proves that the artifact was produced by Aurémi's tagged GitHub release workflow.
+For the trusted software-center experience, install Aurémi from the signed repository by following the README. Direct release downloads remain available and continue to include Sigstore provenance bundles.

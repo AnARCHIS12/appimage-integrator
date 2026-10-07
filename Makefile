@@ -1,8 +1,11 @@
-.PHONY: all binaries installers bundles native-packages packages checksums test clean install-user install-system
+.PHONY: all binaries installers bundles native-packages packages checksums checksums-only print-version test clean install-user install-system
 
-VERSION := 0.3.3
+VERSION := 0.3.4
 
 all: checksums
+
+print-version:
+	@printf '%s\n' '$(VERSION)'
 
 binaries: dist/appimage-integrator-linux-amd64 dist/appimage-integrator-linux-arm64
 
@@ -41,6 +44,9 @@ native-packages: binaries
 packages: bundles native-packages
 
 checksums: packages
+	$(MAKE) checksums-only
+
+checksums-only:
 	cd dist && sha256sum \
 		appimage-integrator-linux-amd64 \
 		appimage-integrator-linux-arm64 \

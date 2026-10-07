@@ -6,6 +6,19 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.4] — 2026-10-07
+
+### Added
+
+- Published official APT and DNF repositories through GitHub Pages.
+- Added a dedicated GPG repository key and signed APT release metadata, DNF repository metadata, and RPM packages.
+- Added AppStream repository catalogs and cached icons so software centers can identify Aurémi by its name, logo, version, and release notes.
+
+### Changed
+
+- Displayed the Aurémi version in the welcome dialog and kept its onboarding text in English.
+- Kept English as the default AppStream description while retaining localized French summary metadata.
+
 ## [0.3.3] — 2026-10-07
 
 ### Added
@@ -76,7 +89,8 @@ The project follows [Semantic Versioning](https://semver.org/).
 - Automated tagged releases through GitHub Actions.
 - SHA-256 checksums for release assets.
 
-[Unreleased]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.3...HEAD
+[Unreleased]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.0...v0.3.1

@@ -2,12 +2,18 @@ Name:           auremi
 Version:        %{auremi_version}
 Release:        1%{?dist}
 Summary:        Simple AppImage integration for Linux desktops
+Summary(fr):    Intégration simple des AppImage aux bureaux Linux
 License:        MIT
 URL:            https://github.com/AnARCHIS12/appimage-integrator
 %description
 Aurémi installs AppImages into the application menu and desktop with a
 double-click. It preserves the original download and does not execute the
 AppImage while inspecting it.
+
+%description -l fr
+Aurémi installe les AppImage dans le menu des applications et sur le bureau
+par un double-clic. Le téléchargement d'origine est conservé et l'AppImage
+n'est pas exécutée pendant son inspection.
 
 %install
 mkdir -p %{buildroot}/usr/bin

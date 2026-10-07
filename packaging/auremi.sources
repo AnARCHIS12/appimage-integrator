@@ -1,0 +1,6 @@
+Types: deb
+URIs: https://anarchis12.github.io/appimage-integrator/apt
+Suites: stable
+Components: main
+Architectures: amd64 arm64
+Signed-By: /etc/apt/keyrings/auremi.gpg
