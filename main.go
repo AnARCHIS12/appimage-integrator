@@ -31,7 +31,7 @@ import (
 const (
 	programName = "appimage-integrator"
 	productName = "Aurémi"
-	version     = "0.3.0"
+	version     = "0.3.1"
 	handlerID   = "appimage-integrator-handler.desktop"
 	launcherID  = "io.github.anarchis12.auremi.desktop"
 	metainfoID  = "io.github.anarchis12.auremi.metainfo.xml"
@@ -75,7 +75,7 @@ type paths struct {
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
-		fmt.Fprintln(os.Stderr, "Erreur :", err)
+		fmt.Fprintln(os.Stderr, "Error:", err)
 		os.Exit(1)
 	}
 }
@@ -111,20 +111,20 @@ func run(args []string) error {
 
 func usageError() error {
 	printUsage(os.Stderr)
-	return errors.New("commande manquante ou inconnue")
+	return errors.New("missing or unknown command")
 }
 
 func printUsage(w io.Writer) {
-	fmt.Fprintf(w, `%s %s — intégration silencieuse des AppImage
+	fmt.Fprintf(w, `%s %s — seamless AppImage integration
 
-Utilisation :
-  %s setup --user              Installer le gestionnaire pour l'utilisateur
-  sudo %s setup --system       Installer le gestionnaire pour tous les utilisateurs
-  %s integrate fichier.AppImage
+Usage:
+  %s setup --user              Install the handler for the current user
+  sudo %s setup --system       Install the handler for every user
+  %s integrate file.AppImage
   %s list
-  %s remove IDENTIFIANT
+  %s remove ID
 
-L'intégration ne lance jamais l'AppImage et ne supprime jamais le fichier source.
+Integration never launches the AppImage and never deletes the source file.
 `, programName, version, programName, programName, programName, programName, programName)
 }
 
@@ -157,24 +157,24 @@ func welcomeCommand() error {
 func integrateCommand(args []string) error {
 	set := flag.NewFlagSet("integrate", flag.ContinueOnError)
 	set.SetOutput(io.Discard)
-	noDesktop := set.Bool("no-desktop", false, "ne pas créer de raccourci sur le bureau")
-	quiet := set.Bool("quiet", false, "ne pas afficher de notification")
+	noDesktop := set.Bool("no-desktop", false, "do not create a desktop shortcut")
+	quiet := set.Bool("quiet", false, "do not display a notification")
 	if err := set.Parse(args); err != nil {
 		return err
 	}
 	if set.NArg() != 1 {
-		return errors.New("indiquez exactement un fichier AppImage")
+		return errors.New("provide exactly one AppImage file")
 	}
 	result, err := integrate(set.Arg(0), !*noDesktop)
 	if err != nil {
 		if !*quiet {
-			notify("Échec de l’installation AppImage", err.Error(), "dialog-error")
+			notify("AppImage installation failed", err.Error(), "dialog-error")
 		}
 		return err
 	}
-	fmt.Printf("%s installé\nIdentifiant : %s\nEmplacement : %s\n", result.Name, result.ID, result.Installed)
+	fmt.Printf("%s installed\nID: %s\nLocation: %s\n", result.Name, result.ID, result.Installed)
 	if !*quiet {
-		notify("AppImage installée", result.Name+" est maintenant disponible dans le menu des applications.", result.Icon)
+		notify("AppImage installed", result.Name+" is now available in the application menu.", result.Icon)
 	}
 	return nil
 }
@@ -186,16 +186,16 @@ func integrate(input string, desktopShortcut bool) (*appMetadata, error) {
 	}
 	info, err := os.Lstat(source)
 	if err != nil {
-		return nil, fmt.Errorf("fichier inaccessible : %w", err)
+		return nil, fmt.Errorf("file is inaccessible: %w", err)
 	}
 	if info.Mode()&os.ModeSymlink != 0 {
-		return nil, errors.New("les liens symboliques sont refusés; sélectionnez le fichier AppImage réel")
+		return nil, errors.New("symbolic links are not accepted; select the actual AppImage file")
 	}
 	if !info.Mode().IsRegular() {
-		return nil, errors.New("la source n’est pas un fichier ordinaire")
+		return nil, errors.New("the source is not a regular file")
 	}
 	if info.Size() < 4096 {
-		return nil, errors.New("fichier trop petit pour être une AppImage valide")
+		return nil, errors.New("the file is too small to be a valid AppImage")
 	}
 	if err := validateAppImageHeader(source); err != nil {
 		return nil, err
@@ -207,7 +207,7 @@ func integrate(input string, desktopShortcut bool) (*appMetadata, error) {
 	}
 	meta := desktopMetadata{
 		Name:       cleanDisplayName(strings.TrimSuffix(filepath.Base(source), filepath.Ext(source))),
-		Comment:    "Application AppImage intégrée localement",
+		Comment:    "Locally integrated AppImage application",
 		Categories: "Utility;",
 	}
 	tmp, err := os.MkdirTemp("", "appimage-integrator-")
@@ -236,7 +236,7 @@ func integrate(input string, desktopShortcut bool) (*appMetadata, error) {
 		}
 	}
 	if err := copyFileAtomic(source, installed, 0o755); err != nil {
-		return nil, fmt.Errorf("copie de l’AppImage : %w", err)
+		return nil, fmt.Errorf("copying the AppImage: %w", err)
 	}
 
 	iconName := id
@@ -308,13 +308,13 @@ func validateAppImageHeader(path string) error {
 	defer f.Close()
 	header := make([]byte, 12)
 	if _, err := io.ReadFull(f, header); err != nil {
-		return errors.New("en-tête AppImage illisible")
+		return errors.New("unable to read the AppImage header")
 	}
 	if string(header[:4]) != "\x7fELF" {
-		return errors.New("le fichier n’est pas un exécutable ELF")
+		return errors.New("the file is not an ELF executable")
 	}
 	if header[8] != 'A' || header[9] != 'I' || (header[10] != 1 && header[10] != 2) {
-		return errors.New("signature AppImage absente ou format non pris en charge")
+		return errors.New("missing AppImage signature or unsupported format")
 	}
 	return nil
 }
@@ -322,7 +322,7 @@ func validateAppImageHeader(path string) error {
 func extractMetadata(source, tempRoot string) (string, error) {
 	unsquashfs, err := exec.LookPath("unsquashfs")
 	if err != nil {
-		return "", errors.New("squashfs-tools absent; utilisation de l’icône générique")
+		return "", errors.New("squashfs-tools is unavailable; using the generic icon")
 	}
 	offset, err := findSquashFSOffset(source)
 	if err != nil {
@@ -348,9 +348,9 @@ func extractMetadata(source, tempRoot string) (string, error) {
 	cmd.Stderr = io.Discard
 	if err := cmd.Run(); err != nil {
 		if ctx.Err() != nil {
-			return "", errors.New("délai dépassé pendant la lecture des métadonnées")
+			return "", errors.New("timed out while reading metadata")
 		}
-		return "", fmt.Errorf("lecture SquashFS impossible : %w", err)
+		return "", fmt.Errorf("unable to read SquashFS data: %w", err)
 	}
 	return out, nil
 }
@@ -398,7 +398,7 @@ func findSquashFSOffset(path string) (int64, error) {
 		}
 		base += int64(n)
 	}
-	return 0, errors.New("système SquashFS AppImage introuvable")
+	return 0, errors.New("AppImage SquashFS filesystem not found")
 }
 
 func bytesIndex(haystack, needle []byte) int {
@@ -465,7 +465,7 @@ func findAndParseDesktop(root string) (desktopMetadata, error) {
 		return nil
 	})
 	if err != nil || len(candidates) == 0 {
-		return desktopMetadata{}, errors.New("aucun fichier .desktop embarqué")
+		return desktopMetadata{}, errors.New("no embedded .desktop file found")
 	}
 	sort.SliceStable(candidates, func(i, j int) bool {
 		return desktopRank(candidates[i]) < desktopRank(candidates[j])
@@ -619,22 +619,22 @@ X-AppImage-Integrator-Version=%s
 func setupCommand(args []string) error {
 	set := flag.NewFlagSet("setup", flag.ContinueOnError)
 	set.SetOutput(io.Discard)
-	user := set.Bool("user", false, "installation utilisateur")
-	system := set.Bool("system", false, "installation système")
+	user := set.Bool("user", false, "per-user installation")
+	system := set.Bool("system", false, "system-wide installation")
 	if err := set.Parse(args); err != nil {
 		return err
 	}
 	if *user == *system {
-		return errors.New("choisissez exactement --user ou --system")
+		return errors.New("choose exactly one of --user or --system")
 	}
 	if *system {
 		if os.Geteuid() != 0 {
-			return errors.New("l’installation système doit être lancée avec sudo")
+			return errors.New("system-wide installation must be run with sudo")
 		}
 		return setupSystem()
 	}
 	if os.Geteuid() == 0 {
-		return errors.New("n’utilisez pas sudo avec --user")
+		return errors.New("do not use sudo with --user")
 	}
 	return setupUser()
 }
@@ -659,8 +659,8 @@ func setupUser() error {
 		return err
 	}
 	refreshMIME(filepath.Join(p.dataHome, "mime"), p.appEntries)
-	fmt.Println("Gestionnaire AppImage installé pour", p.home)
-	fmt.Println("Un double-clic sur une AppImage l’intégrera désormais au menu des applications.")
+	fmt.Println("AppImage handler installed for", p.home)
+	fmt.Println("Double-clicking an AppImage will now integrate it into the application menu.")
 	return nil
 }
 
@@ -676,7 +676,7 @@ func setupSystem() error {
 		return err
 	}
 	refreshMIME("/usr/share/mime", "/usr/share/applications")
-	fmt.Println("Gestionnaire AppImage installé pour tous les utilisateurs.")
+	fmt.Println("AppImage handler installed for all users.")
 	return nil
 }
 
@@ -717,8 +717,10 @@ func writeHandlerFiles(binary, dataRoot string) error {
 	}
 	desktop := fmt.Sprintf(`[Desktop Entry]
 Type=Application
-Name=Installer une AppImage avec Aurémi
-Comment=Intègre silencieusement une AppImage au bureau Linux avec Aurémi
+Name=Install an AppImage with Aurémi
+Name[fr]=Installer une AppImage avec Aurémi
+Comment=Integrate an AppImage into the Linux desktop with Aurémi
+Comment[fr]=Intégrer une AppImage au bureau Linux avec Aurémi
 Exec=%s integrate %%f
 TryExec=%s
 Icon=auremi
@@ -814,7 +816,7 @@ func listCommand() error {
 	}
 	entries, err := os.ReadDir(p.appsRoot)
 	if errors.Is(err, os.ErrNotExist) {
-		fmt.Println("Aucune AppImage intégrée.")
+		fmt.Println("No integrated AppImages.")
 		return nil
 	}
 	if err != nil {
@@ -837,11 +839,11 @@ func listCommand() error {
 
 func removeCommand(args []string) error {
 	if len(args) != 1 {
-		return errors.New("indiquez l’identifiant affiché par la commande list")
+		return errors.New("provide the ID displayed by the list command")
 	}
 	id := args[0]
 	if slugify(id) != id || id == "" {
-		return errors.New("identifiant invalide")
+		return errors.New("invalid ID")
 	}
 	p, err := userPaths()
 	if err != nil {
@@ -849,18 +851,18 @@ func removeCommand(args []string) error {
 	}
 	appDir := filepath.Join(p.appsRoot, id)
 	if !isWithin(appDir, p.appsRoot) {
-		return errors.New("chemin de désinstallation refusé")
+		return errors.New("unsafe removal path rejected")
 	}
 	data, err := os.ReadFile(filepath.Join(appDir, "metadata.json"))
 	if err != nil {
-		return errors.New("application gérée introuvable")
+		return errors.New("managed application not found")
 	}
 	var m appMetadata
 	if err := json.Unmarshal(data, &m); err != nil || m.ID != id {
-		return errors.New("métadonnées de désinstallation invalides")
+		return errors.New("invalid removal metadata")
 	}
 	if !isWithin(m.DesktopFile, p.appEntries) {
-		return errors.New("chemin du lanceur invalide dans les métadonnées")
+		return errors.New("invalid launcher path in metadata")
 	}
 	_ = os.Remove(m.DesktopFile)
 	if m.Icon != "" && isWithin(m.Icon, filepath.Join(p.dataHome, "icons")) {
@@ -873,14 +875,14 @@ func removeCommand(args []string) error {
 		return err
 	}
 	refreshDesktop(p)
-	fmt.Println(m.Name, "désinstallé. Le fichier source n’a pas été supprimé.")
+	fmt.Println(m.Name, "removed. The source file was not deleted.")
 	return nil
 }
 
 func userPaths() (paths, error) {
 	home, err := os.UserHomeDir()
 	if err != nil || home == "" {
-		return paths{}, errors.New("dossier personnel introuvable")
+		return paths{}, errors.New("home directory not found")
 	}
 	dataHome := os.Getenv("XDG_DATA_HOME")
 	if dataHome == "" {
@@ -1131,7 +1133,7 @@ func notify(title, body, icon string) {
 const mimeXML = `<?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="application/vnd.appimage">
-    <comment>Application AppImage</comment>
+    <comment>AppImage application</comment>
     <glob pattern="*.AppImage" weight="90"/>
     <glob pattern="*.appimage" weight="90"/>
     <magic priority="80">
@@ -1140,7 +1142,7 @@ const mimeXML = `<?xml version="1.0" encoding="UTF-8"?>
     </magic>
   </mime-type>
   <mime-type type="application/x-iso9660-appimage">
-    <comment>Application AppImage (compatibilité)</comment>
+    <comment>AppImage application (compatibility)</comment>
     <sub-class-of type="application/vnd.appimage"/>
   </mime-type>
 </mime-info>

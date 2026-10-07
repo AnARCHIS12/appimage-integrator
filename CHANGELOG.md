@@ -6,6 +6,14 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-10-07
+
+### Changed
+
+- Made English the default language for all CLI help, errors, notifications, generated launchers, and integration output.
+- Kept French only as an explicit locale-aware translation for supported graphical metadata and onboarding.
+- Standardized generated MIME descriptions and AppImage handler metadata in English.
+
 ## [0.3.0] — 2026-10-07
 
 ### Added
@@ -46,7 +54,8 @@ The project follows [Semantic Versioning](https://semver.org/).
 - Automated tagged releases through GitHub Actions.
 - SHA-256 checksums for release assets.
 
-[Unreleased]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/AnARCHIS12/appimage-integrator/releases/tag/v0.1.0

@@ -1,14 +1,14 @@
-# Aurémi 0.3.0
+# Aurémi 0.3.1
 
-This release makes Aurémi understandable immediately after installation and gives it a complete software-center identity.
+This release completes Aurémi's internationalization baseline by making English the default language throughout the application.
 
 ## Highlights
 
+- English CLI help, commands, errors, notifications, status messages, generated launchers, and MIME descriptions.
+- English remains the universal fallback regardless of the Linux distribution.
+- French is available only as an explicit locale-aware translation for graphical onboarding and desktop metadata.
 - Validated AppStream metadata for Discover, GNOME Software, and compatible software centers.
 - The official Aurémi name, logo, description, license, links, and release information in package pages.
-- A visible Aurémi entry in the application menu.
-- A localized welcome window that explains the AppImage installation workflow.
-- English and French desktop metadata.
 - Double-clickable `.deb` and `.rpm` packages for AMD64 and ARM64.
 - A universal graphical installer for other Linux distributions.
 - Automatic AppImage integration into the application menu.

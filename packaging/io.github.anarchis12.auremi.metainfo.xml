@@ -31,9 +31,9 @@
     <name>AnARCHIS12</name>
   </developer>
   <releases>
-    <release version="0.3.0" date="2026-10-07">
+    <release version="0.3.1" date="2026-10-07">
       <description>
-        <p>Adds a complete AppStream software-center page and an onboarding launcher.</p>
+        <p>Makes English the default language for all commands, errors, notifications, and generated metadata.</p>
       </description>
     </release>
   </releases>
