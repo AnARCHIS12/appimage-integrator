@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/vnd.appimage">
+    <comment>AppImage application</comment>
+    <glob pattern="*.AppImage" weight="90"/>
+    <glob pattern="*.appimage" weight="90"/>
+    <magic priority="80">
+      <match type="string" offset="8" value="AI\x01"/>
+      <match type="string" offset="8" value="AI\x02"/>
+    </magic>
+  </mime-type>
+  <mime-type type="application/x-iso9660-appimage">
+    <comment>AppImage application (compatibility)</comment>
+    <sub-class-of type="application/vnd.appimage"/>
+  </mime-type>
+</mime-info>

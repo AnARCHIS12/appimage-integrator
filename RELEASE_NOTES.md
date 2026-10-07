@@ -1,11 +1,15 @@
-# Aurémi 0.1.0
+# Aurémi 0.2.0
 
-The first public release of Aurémi, a lightweight AppImage integrator for Linux.
+This release makes installing Aurémi itself as simple as using it.
 
 ## Highlights
 
-- Initial setup through a small native dialog.
-- No terminal or administrator password required for per-user installation.
+- Double-clickable `.deb` packages for Debian, Ubuntu, and Linux Mint.
+- Double-clickable `.rpm` packages for Fedora and openSUSE.
+- A redesigned universal installer bundle with an **Install Aurémi** launcher, icon, and short instructions.
+- Clear graphical success and error messages across KDE, GNOME, and lightweight desktops.
+- Native dialog support through KDialog, Zenity, Yad, and XMessage.
+- No terminal or administrator password required when using the universal per-user installer.
 - Automatic AppImage integration into the application menu.
 - Application name and icon extraction without launching the AppImage.
 - Optional desktop shortcuts.
@@ -16,10 +20,10 @@ The first public release of Aurémi, a lightweight AppImage integrator for Linux
 
 ## Downloads
 
-- **Most 64-bit Intel/AMD computers:** `Auremi-Installer-linux-amd64.tar.gz`
-- **64-bit ARM computers:** `Auremi-Installer-linux-arm64.tar.gz`
+- **Debian, Ubuntu, Linux Mint:** choose the `.deb` file for your processor.
+- **Fedora, openSUSE:** choose the `.rpm` file for your processor.
+- **Other distributions:** choose the universal `Auremi-Installer` archive for your processor.
 
-Extract the appropriate archive, then double-click the Aurémi installer inside it.
+Most computers use AMD64. ARM64 packages are also provided.
 
 Use `SHA256SUMS` to verify downloaded assets.
-

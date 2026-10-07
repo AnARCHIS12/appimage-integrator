@@ -12,29 +12,34 @@ jobs:
   build-and-release:
     runs-on: ubuntu-latest
     steps:
-      - name: Récupérer le code
+      - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Installer Go
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: "1.23.x"
 
-      - name: Tester
+      - name: Install packaging tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes rpm
+
+      - name: Test
         run: make test
 
-      - name: Construire les installateurs
+      - name: Build installers and native packages
         run: make all
 
-      - name: Créer la release GitHub
+      - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "${GITHUB_REF_NAME}" \
             dist/Auremi-Installer-linux-amd64.tar.gz \
             dist/Auremi-Installer-linux-arm64.tar.gz \
-            dist/appimage-integrator-linux-amd64 \
-            dist/appimage-integrator-linux-arm64 \
+            dist/Auremi-*.deb \
+            dist/Auremi-*.rpm \
             dist/SHA256SUMS \
             assets/auremi-logo.png \
             --verify-tag \

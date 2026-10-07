@@ -6,8 +6,19 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] — 2026-10-07
+
+### Added
+
+- Double-clickable DEB packages for AMD64 and ARM64.
+- Double-clickable RPM packages for AMD64 and ARM64.
+- A universal graphical installer bundle with a dedicated desktop launcher, icon, and instructions.
+- Yad and XMessage graphical-dialog fallbacks.
+
 ### Changed
 
+- Made installation instructions distribution-specific and beginner-friendly.
+- Ensured the graphical installer always produces visible success or error feedback.
 - Reorganized and translated the project documentation into English.
 - Added contribution, security, and issue-reporting documentation.
 
@@ -26,6 +37,6 @@ The project follows [Semantic Versioning](https://semver.org/).
 - Automated tagged releases through GitHub Actions.
 - SHA-256 checksums for release assets.
 
-[Unreleased]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/AnARCHIS12/appimage-integrator/releases/tag/v0.1.0
-

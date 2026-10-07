@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Install Aurémi
+Name[fr]=Installer Aurémi
+Comment=Install the AppImage integrator for your account
+Comment[fr]=Installer l'intégrateur AppImage pour votre compte
+Exec=sh -c "exec \"\\$(dirname \"\\$1\")/Auremi-Installer\"" sh %k
+Icon=system-software-install
+Terminal=false
+StartupNotify=true
+Categories=Utility;

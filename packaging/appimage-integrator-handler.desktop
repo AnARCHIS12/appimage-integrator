@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Install an AppImage with Aurémi
+Comment=Integrate an AppImage into the Linux desktop with Aurémi
+Exec=/usr/bin/appimage-integrator integrate %f
+TryExec=/usr/bin/appimage-integrator
+Icon=auremi
+Terminal=false
+NoDisplay=true
+MimeType=application/vnd.appimage;application/x-iso9660-appimage;

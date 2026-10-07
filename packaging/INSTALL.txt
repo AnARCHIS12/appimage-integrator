@@ -1,0 +1,11 @@
+AUREMI — GRAPHICAL INSTALLER
+============================
+
+1. Double-click "Install Aurémi".
+2. Choose "Execute" or "Launch" if your file manager asks.
+3. Select "Install" in the Aurémi window.
+
+No terminal and no administrator password are required.
+
+If your desktop refuses to launch .desktop files, double-click
+"Auremi-Installer" in this same folder instead.

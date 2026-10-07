@@ -32,6 +32,7 @@ Requirements:
 
 - Go 1.23 or newer
 - GNU Make
+- `dpkg-deb` and `rpmbuild` when building every release package
 
 Run the tests:
 
@@ -63,4 +64,3 @@ Use a clear title and explain:
 - whether it affects compatibility or security.
 
 By contributing, you agree that your contribution may be distributed under the project's MIT License.
-

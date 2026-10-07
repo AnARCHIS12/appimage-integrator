@@ -6,7 +6,7 @@
 
 ### Install any AppImage with a double-click.
 
-No terminal. No administrator password. No deleted downloads.
+No terminal. Native packages and a universal graphical installer.
 
 [![Latest release](https://img.shields.io/github/v/release/AnARCHIS12/appimage-integrator?style=for-the-badge&color=dc2626)](https://github.com/AnARCHIS12/appimage-integrator/releases/latest)
 [![Release build](https://img.shields.io/github/actions/workflow/status/AnARCHIS12/appimage-integrator/release.yml?style=for-the-badge&label=build)](https://github.com/AnARCHIS12/appimage-integrator/actions/workflows/release.yml)
@@ -38,17 +38,26 @@ Aurémi handles that workflow automatically while keeping the original download 
 
 ## Quick start
 
-### Graphical installation
+### Easiest installation
 
 1. Open the [latest release](https://github.com/AnARCHIS12/appimage-integrator/releases/latest).
-2. Download the archive for your computer:
-   - **Most Intel/AMD PCs:** `Auremi-Installer-linux-amd64.tar.gz`
-   - **ARM64 systems:** `Auremi-Installer-linux-arm64.tar.gz`
-3. Extract the archive.
-4. Double-click the `Auremi-Installer` executable.
-5. Select **Install**.
+2. Download the file for your Linux distribution and processor:
+   - **Ubuntu, Debian, Linux Mint:** download the `.deb` file, then double-click it.
+   - **Fedora, openSUSE:** download the `.rpm` file, then double-click it.
+3. Select **Install** in your distribution's software manager.
 
-The installer uses KDialog on KDE Plasma, Zenity on GNOME and compatible desktops, or a desktop notification as a fallback. It installs only for the current account and does not request an administrator password.
+The native package registers Aurémi for every account on the computer. The software manager may request an administrator password, just like any other system package.
+
+### Universal graphical installer
+
+For Arch Linux, Manjaro, Alpine, or any other distribution:
+
+1. Download `Auremi-Installer-linux-amd64.tar.gz` for most PCs, or `Auremi-Installer-linux-arm64.tar.gz` for ARM64.
+2. Extract the archive.
+3. Double-click **Install Aurémi** inside the extracted folder.
+4. Choose **Execute** if the file manager asks, then select **Install**.
+
+This portable installer uses a native desktop dialog and installs only for the current account. It does not require a terminal or administrator password. It supports KDialog, Zenity, Yad, and XMessage, with a visible text fallback if none is available.
 
 ### Command-line installation
 
@@ -223,7 +232,7 @@ Requirements:
 
 - Go 1.23 or newer
 - GNU Make
-- `tar` and `sha256sum` for release packages
+- `tar`, `sha256sum`, `dpkg-deb`, and `rpmbuild` for all release packages
 
 Build and test:
 
