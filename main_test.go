@@ -129,6 +129,60 @@ func TestFindAndParseDesktopKeepsDesktopID(t *testing.T) {
 	}
 }
 
+func TestParseDesktopFileReadsAppImageVersion(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "example.desktop")
+	data := "[Desktop Entry]\nName=Example\nVersion=1.0\nX-AppImage-Version=4.6.2-beta.1\n"
+	if err := os.WriteFile(path, []byte(data), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	m, err := parseDesktopFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if m.Version != "4.6.2-beta.1" {
+		t.Fatalf("Version = %q", m.Version)
+	}
+}
+
+func TestFindAppStreamVersionMatchesDesktopID(t *testing.T) {
+	root := t.TempDir()
+	dir := filepath.Join(root, "usr/share/metainfo")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	files := map[string]string{
+		"dependency.xml": `<component><id>org.example.Dependency</id><releases><release version="99.0"/></releases></component>`,
+		"editor.xml":     `<component><id>org.example.Editor</id><releases><release version="7.4.1"/></releases></component>`,
+	}
+	for name, data := range files {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(data), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if got := findAppStreamVersion(root, "org.example.Editor.desktop"); got != "7.4.1" {
+		t.Fatalf("findAppStreamVersion() = %q", got)
+	}
+}
+
+func TestVersionFromFilename(t *testing.T) {
+	if got := versionFromFilename("/tmp/Example-Studio-3.12.4-beta.2-x86_64.AppImage"); got != "3.12.4-beta.2" {
+		t.Fatalf("versionFromFilename() = %q", got)
+	}
+	if got := versionFromFilename("/tmp/Example-Studio.AppImage"); got != "" {
+		t.Fatalf("versionFromFilename() invented version %q", got)
+	}
+}
+
+func TestInstalledDesktopEntryIncludesApplicationVersion(t *testing.T) {
+	body := installedDesktopEntry(desktopMetadata{Name: "Example", Version: "2.8.0", Categories: "Utility;"}, "/tmp/Example.AppImage", "/tmp/example.png", "/tmp/source.AppImage")
+	if !strings.Contains(body, "X-AppImage-Version=2.8.0\n") {
+		t.Fatalf("application version missing:\n%s", body)
+	}
+	if !strings.Contains(body, "X-AppImage-Integrator-Version=0.3.3\n") {
+		t.Fatalf("integrator version missing:\n%s", body)
+	}
+}
+
 func writeTestPNG(t *testing.T, path string, size int) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {

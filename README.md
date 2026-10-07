@@ -211,8 +211,8 @@ sha256sum -c SHA256SUMS
 Then install [Cosign](https://docs.sigstore.dev/cosign/system_config/installation/) and verify the file's signature. Replace the artifact and tag if needed:
 
 ```bash
-artifact=Auremi-0.3.2-linux-amd64.deb
-tag=v0.3.2
+artifact=Auremi-0.3.3-linux-amd64.deb
+tag=v0.3.3
 cosign verify-blob "$artifact" \
   --bundle "$artifact.sigstore.json" \
   --certificate-identity "https://github.com/AnARCHIS12/appimage-integrator/.github/workflows/release.yml@refs/tags/$tag" \

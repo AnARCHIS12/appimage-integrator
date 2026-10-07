@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
+	"encoding/xml"
 	"errors"
 	"flag"
 	"fmt"
@@ -31,7 +32,7 @@ import (
 const (
 	programName = "appimage-integrator"
 	productName = "Aurémi"
-	version     = "0.3.2"
+	version     = "0.3.3"
 	handlerID   = "appimage-integrator-handler.desktop"
 	launcherID  = "io.github.anarchis12.auremi.desktop"
 	metainfoID  = "io.github.anarchis12.auremi.metainfo.xml"
@@ -46,6 +47,7 @@ var auremiMetainfo []byte
 type appMetadata struct {
 	ID          string   `json:"id"`
 	Name        string   `json:"name"`
+	Version     string   `json:"version,omitempty"`
 	Comment     string   `json:"comment,omitempty"`
 	Source      string   `json:"source"`
 	Installed   string   `json:"installed"`
@@ -58,6 +60,7 @@ type appMetadata struct {
 
 type desktopMetadata struct {
 	Name           string
+	Version        string
 	Comment        string
 	Categories     string
 	StartupWMClass string
@@ -182,7 +185,11 @@ func integrateCommand(args []string) error {
 		}
 		return err
 	}
-	fmt.Printf("%s installed\nID: %s\nLocation: %s\n", result.Name, result.ID, result.Installed)
+	fmt.Printf("%s installed\nID: %s\n", result.Name, result.ID)
+	if result.Version != "" {
+		fmt.Printf("Version: %s\n", result.Version)
+	}
+	fmt.Printf("Location: %s\n", result.Installed)
 	if !*quiet {
 		notify("AppImage installed", result.Name+" is now available in the application menu.", result.Icon)
 	}
@@ -231,9 +238,15 @@ func integrate(input string, desktopShortcut bool) (*appMetadata, error) {
 		if parsed, err := findAndParseDesktop(extracted); err == nil {
 			mergeDesktopMetadata(&meta, parsed)
 		}
+		if meta.Version == "" {
+			meta.Version = findAppStreamVersion(extracted, meta.DesktopID)
+		}
 	}
 	if meta.Name == "" {
 		meta.Name = "AppImage"
+	}
+	if meta.Version == "" {
+		meta.Version = versionFromFilename(source)
 	}
 	id := uniqueID(slugify(meta.Name), source, p.appsRoot)
 	appDir := filepath.Join(p.appsRoot, id)
@@ -291,6 +304,7 @@ func integrate(input string, desktopShortcut bool) (*appMetadata, error) {
 	result := &appMetadata{
 		ID:          id,
 		Name:        meta.Name,
+		Version:     meta.Version,
 		Comment:     meta.Comment,
 		Source:      source,
 		Installed:   installed,
@@ -351,6 +365,8 @@ func extractMetadata(source, tempRoot string) (string, error) {
 		"usr/share/icons/hicolor/*/apps/*.svg",
 		"usr/share/icons/hicolor/*/apps/*.xpm",
 		"usr/share/pixmaps/*",
+		"usr/share/metainfo/*.xml",
+		"usr/share/appdata/*.xml",
 	}
 	args := append([]string{"-no-progress", "-d", out, payload}, patterns...)
 	cmd := exec.CommandContext(ctx, unsquashfs, args...)
@@ -532,6 +548,8 @@ func parseDesktopFile(path string) (desktopMetadata, error) {
 			m.StartupWMClass = cleanDesktopValue(val)
 		case "Icon":
 			m.Icon = cleanDesktopValue(val)
+		case "X-AppImage-Version":
+			m.Version = cleanAppVersion(val)
 		}
 	}
 	return m, s.Err()
@@ -540,6 +558,9 @@ func parseDesktopFile(path string) (desktopMetadata, error) {
 func mergeDesktopMetadata(dst *desktopMetadata, src desktopMetadata) {
 	if src.Name != "" {
 		dst.Name = src.Name
+	}
+	if src.Version != "" {
+		dst.Version = src.Version
 	}
 	if src.Comment != "" {
 		dst.Comment = src.Comment
@@ -552,6 +573,80 @@ func mergeDesktopMetadata(dst *desktopMetadata, src desktopMetadata) {
 	}
 	dst.Icon = src.Icon
 	dst.DesktopID = src.DesktopID
+}
+
+func findAppStreamVersion(root, desktopID string) string {
+	type component struct {
+		ID       string `xml:"id"`
+		Releases []struct {
+			Version string `xml:"version,attr"`
+		} `xml:"releases>release"`
+	}
+	type candidate struct {
+		id      string
+		version string
+	}
+	var candidates []candidate
+	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.EqualFold(filepath.Ext(path), ".xml") {
+			return nil
+		}
+		clean := filepath.ToSlash(path)
+		if !strings.Contains(clean, "/usr/share/metainfo/") && !strings.Contains(clean, "/usr/share/appdata/") {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil || info.Size() > 2<<20 {
+			return nil
+		}
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil
+		}
+		var parsed component
+		if xml.Unmarshal(data, &parsed) != nil || parsed.ID == "" {
+			return nil
+		}
+		for _, release := range parsed.Releases {
+			if version := cleanAppVersion(release.Version); version != "" {
+				candidates = append(candidates, candidate{id: strings.TrimSpace(parsed.ID), version: version})
+				break
+			}
+		}
+		return nil
+	})
+	target := strings.TrimSuffix(desktopID, ".desktop")
+	for _, candidate := range candidates {
+		id := strings.TrimSuffix(candidate.id, ".desktop")
+		if target != "" && strings.EqualFold(id, target) {
+			return candidate.version
+		}
+	}
+	if len(candidates) == 1 {
+		return candidates[0].version
+	}
+	return ""
+}
+
+func cleanAppVersion(value string) string {
+	value = cleanDesktopValue(value)
+	runes := []rune(value)
+	if len(runes) > 100 {
+		value = string(runes[:100])
+	}
+	return value
+}
+
+func versionFromFilename(path string) string {
+	base := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
+	archSuffix := regexp.MustCompile(`(?i)(?:[-_.](?:x86_64|amd64|aarch64|arm64|i[3-6]86))$`)
+	base = archSuffix.ReplaceAllString(base, "")
+	versionPattern := regexp.MustCompile(`(?i)(?:^|[-_ ])v?([0-9]+(?:\.[0-9]+)+(?:[-+._][0-9A-Za-z]+)*)`)
+	matches := versionPattern.FindAllStringSubmatch(base, -1)
+	if len(matches) == 0 {
+		return ""
+	}
+	return cleanAppVersion(matches[len(matches)-1][1])
 }
 
 func findBestIcons(root string, meta desktopMetadata) []iconCandidate {
@@ -727,6 +822,10 @@ func installedDesktopEntry(m desktopMetadata, executable, iconName, source strin
 	if m.StartupWMClass != "" {
 		wm = "StartupWMClass=" + cleanDesktopValue(m.StartupWMClass) + "\n"
 	}
+	appVersion := ""
+	if m.Version != "" {
+		appVersion = "X-AppImage-Version=" + cleanAppVersion(m.Version) + "\n"
+	}
 	return fmt.Sprintf(`[Desktop Entry]
 Version=1.0
 Type=Application
@@ -739,8 +838,8 @@ Terminal=false
 StartupNotify=true
 %sCategories=%s
 X-AppImage-Source=%s
-X-AppImage-Integrator-Version=%s
-`, cleanDesktopValue(m.Name), cleanDesktopValue(m.Comment), quoteExec(executable), cleanDesktopValue(executable), cleanDesktopValue(iconName), wm, cleanCategories(m.Categories), cleanDesktopValue(source), version)
+%sX-AppImage-Integrator-Version=%s
+`, cleanDesktopValue(m.Name), cleanDesktopValue(m.Comment), quoteExec(executable), cleanDesktopValue(executable), cleanDesktopValue(iconName), wm, cleanCategories(m.Categories), cleanDesktopValue(source), appVersion, version)
 }
 
 func safeDesktopID(value string) string {
@@ -1020,7 +1119,11 @@ func listCommand() error {
 		data, err := os.ReadFile(filepath.Join(p.appsRoot, entry.Name(), "metadata.json"))
 		var m appMetadata
 		if err == nil && json.Unmarshal(data, &m) == nil {
-			fmt.Printf("%-28s %s\n", m.ID, m.Name)
+			if m.Version != "" {
+				fmt.Printf("%-28s %-18s %s\n", m.ID, m.Version, m.Name)
+			} else {
+				fmt.Printf("%-28s %-18s %s\n", m.ID, "unknown", m.Name)
+			}
 		} else {
 			fmt.Println(entry.Name())
 		}

@@ -31,6 +31,11 @@
     <name>AnARCHIS12</name>
   </developer>
   <releases>
+    <release version="0.3.3" date="2026-10-07">
+      <description>
+        <p>Identifies and preserves precise AppImage application versions from desktop, AppStream, or versioned filename metadata.</p>
+      </description>
+    </release>
     <release version="0.3.2" date="2026-10-07">
       <description>
         <p>Improves Wayland launcher matching, reliable icon selection, multi-resolution icons, and signed release artifacts.</p>

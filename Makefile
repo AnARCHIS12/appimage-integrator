@@ -1,6 +1,6 @@
 .PHONY: all binaries installers bundles native-packages packages checksums test clean install-user install-system
 
-VERSION := 0.3.2
+VERSION := 0.3.3
 
 all: checksums
 

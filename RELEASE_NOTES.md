@@ -1,15 +1,15 @@
-# Aurémi 0.3.2
+# Aurémi 0.3.3
 
-This release fixes incorrect or missing application icons and improves launcher matching on Wayland and other Freedesktop-compatible desktops. Release downloads are now cryptographically signed with Sigstore.
+This release lets Aurémi identify the precise version of an integrated AppImage while retaining the icon and Wayland improvements from 0.3.2. Release downloads remain cryptographically signed with Sigstore.
 
 ## Highlights
 
-- Preserves the embedded desktop-file ID so Wayland compositors can associate running windows with the correct launcher and icon.
-- Selects the icon declared by the AppImage instead of an unrelated large image from the bundle.
-- Recognizes extensionless `.DirIcon` files, symlinked icons, SVG, PNG, and XPM assets.
-- Installs all useful resolutions and uses a reliable absolute icon path across desktop environments.
-- Cleans obsolete icon variants when an application is reintegrated or removed.
-- Uses the installed Aurémi logo directly in generated and native-package launchers.
+- Reads the official `X-AppImage-Version` field when supplied by the publisher.
+- Falls back to matching embedded AppStream release metadata when needed.
+- Recognizes a structured version in the filename only when no authoritative metadata exists.
+- Stores the application version in `metadata.json` and the generated desktop entry.
+- Shows the detected version after integration and in the managed-application list.
+- Keeps the corrected icon selection, multiple icon resolutions, and Wayland launcher matching introduced in 0.3.2.
 - Signs every executable, installer archive, DEB, RPM, and checksum file with keyless Sigstore signing.
 - Publishes a `.sigstore.json` verification bundle beside every signed download.
 
