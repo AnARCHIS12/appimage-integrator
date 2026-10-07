@@ -1,0 +1,42 @@
+name: Release Aurémi
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23.x"
+
+      - name: Tester
+        run: make test
+
+      - name: Construire les installateurs
+        run: make all
+
+      - name: Créer la release GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            dist/Auremi-Installer-linux-amd64.tar.gz \
+            dist/Auremi-Installer-linux-arm64.tar.gz \
+            dist/appimage-integrator-linux-amd64 \
+            dist/appimage-integrator-linux-arm64 \
+            dist/SHA256SUMS \
+            assets/auremi-logo.png \
+            --verify-tag \
+            --title "Aurémi ${GITHUB_REF_NAME#v}" \
+            --notes-file RELEASE_NOTES.md
