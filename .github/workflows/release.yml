@@ -65,8 +65,11 @@ jobs:
               --define "_gpg_path $GNUPGHOME" \
               --addsign "$artifact"
           done
-          sudo rpm --import packaging/auremi-signing-key.asc
-          rpm --checksig --verbose dist/Auremi-*.rpm | tee "$RUNNER_TEMP/rpm-signatures.txt"
+          rpmdb="$RUNNER_TEMP/rpmdb"
+          mkdir -p "$rpmdb"
+          rpm --dbpath "$rpmdb" --initdb
+          rpm --dbpath "$rpmdb" --import packaging/auremi-signing-key.asc
+          rpm --dbpath "$rpmdb" --checksig --verbose dist/Auremi-*.rpm | tee "$RUNNER_TEMP/rpm-signatures.txt"
           test "$(grep -c 'Signature, key ID 4250d249: OK' "$RUNNER_TEMP/rpm-signatures.txt")" -eq 2
 
       - name: Create checksums and signed repositories
