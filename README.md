@@ -202,11 +202,24 @@ Please report security issues using the instructions in [SECURITY.md](SECURITY.m
 
 ## Verify a release
 
-Every release includes a `SHA256SUMS` file:
+Every release includes a `SHA256SUMS` file and a Sigstore bundle for each executable, archive, package, and checksum file. First check the downloaded file against the checksum list:
 
 ```bash
 sha256sum -c SHA256SUMS
 ```
+
+Then install [Cosign](https://docs.sigstore.dev/cosign/system_config/installation/) and verify the file's signature. Replace the artifact and tag if needed:
+
+```bash
+artifact=Auremi-0.3.2-linux-amd64.deb
+tag=v0.3.2
+cosign verify-blob "$artifact" \
+  --bundle "$artifact.sigstore.json" \
+  --certificate-identity "https://github.com/AnARCHIS12/appimage-integrator/.github/workflows/release.yml@refs/tags/$tag" \
+  --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+```
+
+The verification binds the artifact to this repository's release workflow and its public Sigstore transparency-log entry. It does not certify the safety of third-party AppImages installed with Aurémi.
 
 ## Managed file locations
 

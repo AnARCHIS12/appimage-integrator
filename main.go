@@ -31,7 +31,7 @@ import (
 const (
 	programName = "appimage-integrator"
 	productName = "Aurémi"
-	version     = "0.3.1"
+	version     = "0.3.2"
 	handlerID   = "appimage-integrator-handler.desktop"
 	launcherID  = "io.github.anarchis12.auremi.desktop"
 	metainfoID  = "io.github.anarchis12.auremi.metainfo.xml"
@@ -44,15 +44,16 @@ var auremiLogo []byte
 var auremiMetainfo []byte
 
 type appMetadata struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Comment     string `json:"comment,omitempty"`
-	Source      string `json:"source"`
-	Installed   string `json:"installed"`
-	SHA256      string `json:"sha256"`
-	Integrated  string `json:"integrated_at"`
-	Icon        string `json:"icon,omitempty"`
-	DesktopFile string `json:"desktop_file"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Comment     string   `json:"comment,omitempty"`
+	Source      string   `json:"source"`
+	Installed   string   `json:"installed"`
+	SHA256      string   `json:"sha256"`
+	Integrated  string   `json:"integrated_at"`
+	Icon        string   `json:"icon,omitempty"`
+	Icons       []string `json:"icons,omitempty"`
+	DesktopFile string   `json:"desktop_file"`
 }
 
 type desktopMetadata struct {
@@ -61,6 +62,14 @@ type desktopMetadata struct {
 	Categories     string
 	StartupWMClass string
 	Icon           string
+	DesktopID      string
+}
+
+type iconCandidate struct {
+	path    string
+	ext     string
+	sizeDir string
+	score   int64
 }
 
 type paths struct {
@@ -137,19 +146,20 @@ func welcomeCommand() error {
 		fmt.Println(message)
 		return nil
 	}
+	icon := installedAuremiIcon()
 	if path, err := exec.LookPath("kdialog"); err == nil {
-		return exec.Command(path, "--title", productName, "--icon", "auremi", "--msgbox", message).Run()
+		return exec.Command(path, "--title", productName, "--icon", icon, "--msgbox", message).Run()
 	}
 	if path, err := exec.LookPath("zenity"); err == nil {
-		return exec.Command(path, "--info", "--title="+productName, "--icon-name=auremi", "--text="+message).Run()
+		return exec.Command(path, "--info", "--title="+productName, "--icon-name="+icon, "--text="+message).Run()
 	}
 	if path, err := exec.LookPath("yad"); err == nil {
-		return exec.Command(path, "--info", "--title="+productName, "--window-icon=auremi", "--text="+message, "--button=OK:0").Run()
+		return exec.Command(path, "--info", "--title="+productName, "--window-icon="+icon, "--text="+message, "--button=OK:0").Run()
 	}
 	if path, err := exec.LookPath("xmessage"); err == nil {
 		return exec.Command(path, "-center", "-title", productName, "-buttons", "OK:0", message).Run()
 	}
-	notify(productName, message, "auremi")
+	notify(productName, message, icon)
 	fmt.Println(message)
 	return nil
 }
@@ -228,7 +238,11 @@ func integrate(input string, desktopShortcut bool) (*appMetadata, error) {
 	id := uniqueID(slugify(meta.Name), source, p.appsRoot)
 	appDir := filepath.Join(p.appsRoot, id)
 	installed := filepath.Join(appDir, safeAppImageFilename(meta.Name))
-	entry := filepath.Join(p.appEntries, id+".desktop")
+	entry := preferredDesktopEntry(p.appEntries, meta.DesktopID, id, source)
+	var previous appMetadata
+	if data, err := os.ReadFile(filepath.Join(appDir, "metadata.json")); err == nil {
+		_ = json.Unmarshal(data, &previous)
+	}
 
 	for _, dir := range []string{appDir, p.appEntries, p.iconsRoot} {
 		if err := os.MkdirAll(dir, 0o755); err != nil {
@@ -239,20 +253,12 @@ func integrate(input string, desktopShortcut bool) (*appMetadata, error) {
 		return nil, fmt.Errorf("copying the AppImage: %w", err)
 	}
 
-	iconName := id
 	iconPath := ""
+	var iconPaths []string
 	if extracted != "" {
-		if candidate := findBestIcon(extracted, meta.Icon); candidate != "" {
-			ext := strings.ToLower(filepath.Ext(candidate))
-			if ext == ".png" || ext == ".svg" || ext == ".xpm" {
-				iconDir := filepath.Join(p.dataHome, "icons", "hicolor", iconSizeDir(candidate), "apps")
-				if err := os.MkdirAll(iconDir, 0o755); err == nil {
-					iconPath = filepath.Join(iconDir, id+ext)
-					if err := copyFileAtomic(candidate, iconPath, 0o644); err != nil {
-						iconPath = ""
-					}
-				}
-			}
+		iconPaths = installIcons(findBestIcons(extracted, meta), p.dataHome, id)
+		if len(iconPaths) > 0 {
+			iconPath = iconPaths[0]
 		}
 	}
 	if iconPath == "" {
@@ -264,9 +270,10 @@ func integrate(input string, desktopShortcut bool) (*appMetadata, error) {
 		if err := writeAtomic(iconPath, []byte(genericIconSVG), 0o644); err != nil {
 			return nil, err
 		}
+		iconPaths = []string{iconPath}
 	}
 
-	desktopBody := installedDesktopEntry(meta, installed, iconName, source)
+	desktopBody := installedDesktopEntry(meta, installed, iconPath, source)
 	if err := writeAtomic(entry, []byte(desktopBody), 0o755); err != nil {
 		return nil, err
 	}
@@ -290,12 +297,14 @@ func integrate(input string, desktopShortcut bool) (*appMetadata, error) {
 		SHA256:      hash,
 		Integrated:  time.Now().Format(time.RFC3339),
 		Icon:        iconPath,
+		Icons:       iconPaths,
 		DesktopFile: entry,
 	}
 	encoded, _ := json.MarshalIndent(result, "", "  ")
 	if err := writeAtomic(filepath.Join(appDir, "metadata.json"), append(encoded, '\n'), 0o644); err != nil {
 		return nil, err
 	}
+	cleanupPreviousIntegration(previous, *result, p)
 	refreshDesktop(p)
 	return result, nil
 }
@@ -340,6 +349,7 @@ func extractMetadata(source, tempRoot string) (string, error) {
 		"usr/share/applications/*.desktop",
 		"usr/share/icons/hicolor/*/apps/*.png",
 		"usr/share/icons/hicolor/*/apps/*.svg",
+		"usr/share/icons/hicolor/*/apps/*.xpm",
 		"usr/share/pixmaps/*",
 	}
 	args := append([]string{"-no-progress", "-d", out, payload}, patterns...)
@@ -470,7 +480,11 @@ func findAndParseDesktop(root string) (desktopMetadata, error) {
 	sort.SliceStable(candidates, func(i, j int) bool {
 		return desktopRank(candidates[i]) < desktopRank(candidates[j])
 	})
-	return parseDesktopFile(candidates[0])
+	m, err := parseDesktopFile(candidates[0])
+	if err == nil {
+		m.DesktopID = safeDesktopID(filepath.Base(candidates[0]))
+	}
+	return m, err
 }
 
 func desktopRank(path string) int {
@@ -537,50 +551,163 @@ func mergeDesktopMetadata(dst *desktopMetadata, src desktopMetadata) {
 		dst.StartupWMClass = src.StartupWMClass
 	}
 	dst.Icon = src.Icon
+	dst.DesktopID = src.DesktopID
 }
 
-func findBestIcon(root, desktopIcon string) string {
-	target := strings.TrimSuffix(filepath.Base(desktopIcon), filepath.Ext(desktopIcon))
-	type candidate struct {
-		path  string
-		score int64
-	}
-	var all []candidate
+func findBestIcons(root string, meta desktopMetadata) []iconCandidate {
+	target := iconBase(meta.Icon)
+	desktopBase := iconBase(meta.DesktopID)
+	nameBase := normalizedIconName(meta.Name)
+	var all []iconCandidate
+	seen := make(map[string]int)
 	_ = filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return nil
 		}
-		ext := strings.ToLower(filepath.Ext(path))
-		if ext != ".png" && ext != ".svg" && ext != ".xpm" {
+		realPath, err := filepath.EvalSymlinks(path)
+		if err != nil || !isWithin(realPath, root) {
 			return nil
 		}
-		info, err := d.Info()
-		if err != nil || info.Size() > 10<<20 {
+		info, err := os.Stat(realPath)
+		if err != nil || !info.Mode().IsRegular() || info.Size() > 10<<20 {
 			return nil
 		}
-		score := info.Size()
+		ext := supportedIconExtension(realPath)
+		if ext == "" {
+			return nil
+		}
+		score := int64(0)
 		base := strings.TrimSuffix(d.Name(), filepath.Ext(d.Name()))
 		if target != "" && strings.EqualFold(base, target) {
-			score += 1 << 40
+			score = 4 << 40
 		}
-		if d.Name() == ".DirIcon" || strings.EqualFold(base, "icon") {
-			score += 1 << 39
+		if d.Name() == ".DirIcon" {
+			score = max64(score, 3<<40)
 		}
-		if strings.Contains(filepath.ToSlash(path), "/usr/share/icons/") {
-			score += 1 << 38
+		if desktopBase != "" && strings.EqualFold(base, desktopBase) {
+			score = max64(score, 2<<40)
 		}
-		all = append(all, candidate{path, score})
+		if nameBase != "" && normalizedIconName(base) == nameBase {
+			score = max64(score, 1<<40)
+		}
+		if score == 0 {
+			return nil
+		}
+		if strings.Contains(filepath.ToSlash(realPath), "/usr/share/icons/") {
+			score += 1 << 32
+		}
+		score += iconFormatScore(ext)
+		score += min64(info.Size(), 1<<31)
+		candidate := iconCandidate{path: realPath, ext: ext, sizeDir: iconSizeDir(realPath), score: score}
+		if index, ok := seen[realPath]; ok {
+			if candidate.score > all[index].score {
+				all[index] = candidate
+			}
+			return nil
+		}
+		seen[realPath] = len(all)
+		all = append(all, candidate)
 		return nil
 	})
 	if len(all) == 0 {
-		return ""
+		return nil
 	}
 	sort.Slice(all, func(i, j int) bool { return all[i].score > all[j].score })
-	return all[0].path
+	bestClass := all[0].score >> 40
+	var selected []iconCandidate
+	seenSlots := make(map[string]bool)
+	for _, candidate := range all {
+		if candidate.score>>40 != bestClass {
+			continue
+		}
+		slot := candidate.sizeDir + candidate.ext
+		if !seenSlots[slot] {
+			selected = append(selected, candidate)
+			seenSlots[slot] = true
+		}
+	}
+	return selected
+}
+
+func installIcons(candidates []iconCandidate, dataHome, id string) []string {
+	var installed []string
+	for _, candidate := range candidates {
+		iconDir := filepath.Join(dataHome, "icons", "hicolor", candidate.sizeDir, "apps")
+		if err := os.MkdirAll(iconDir, 0o755); err != nil {
+			continue
+		}
+		destination := filepath.Join(iconDir, id+candidate.ext)
+		if err := copyFileAtomic(candidate.path, destination, 0o644); err == nil {
+			installed = append(installed, destination)
+		}
+	}
+	return installed
+}
+
+func supportedIconExtension(path string) string {
+	f, err := os.Open(path)
+	if err != nil {
+		return ""
+	}
+	defer f.Close()
+	header := make([]byte, 4096)
+	n, _ := f.Read(header)
+	header = header[:n]
+	if len(header) >= 8 && string(header[:8]) == "\x89PNG\r\n\x1a\n" {
+		return ".png"
+	}
+	text := strings.TrimSpace(string(header))
+	if strings.Contains(strings.ToLower(text), "<svg") {
+		return ".svg"
+	}
+	if strings.Contains(text, "XPM") {
+		return ".xpm"
+	}
+	return ""
+}
+
+func iconBase(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	base := filepath.Base(value)
+	return strings.TrimSuffix(base, filepath.Ext(base))
+}
+
+func normalizedIconName(value string) string {
+	return strings.ReplaceAll(slugify(value), "-", "")
+}
+
+func iconFormatScore(ext string) int64 {
+	switch ext {
+	case ".svg":
+		return 3 << 34
+	case ".png":
+		return 2 << 34
+	case ".xpm":
+		return 1 << 34
+	default:
+		return 0
+	}
+}
+
+func max64(a, b int64) int64 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
+func min64(a, b int64) int64 {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func iconSizeDir(path string) string {
-	if strings.EqualFold(filepath.Ext(path), ".svg") {
+	if strings.EqualFold(filepath.Ext(path), ".svg") || (filepath.Ext(path) == "" && supportedIconExtension(path) == ".svg") {
 		return "scalable"
 	}
 	f, err := os.Open(path)
@@ -614,6 +741,69 @@ StartupNotify=true
 X-AppImage-Source=%s
 X-AppImage-Integrator-Version=%s
 `, cleanDesktopValue(m.Name), cleanDesktopValue(m.Comment), quoteExec(executable), cleanDesktopValue(executable), cleanDesktopValue(iconName), wm, cleanCategories(m.Categories), cleanDesktopValue(source), version)
+}
+
+func safeDesktopID(value string) string {
+	if len(value) < len("a.desktop") || len(value) > 200 || filepath.Base(value) != value || strings.HasPrefix(value, ".") {
+		return ""
+	}
+	if !strings.HasSuffix(strings.ToLower(value), ".desktop") {
+		return ""
+	}
+	for _, r := range value {
+		if !((r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '.' || r == '_' || r == '-') {
+			return ""
+		}
+	}
+	if value == handlerID || value == launcherID {
+		return ""
+	}
+	return value
+}
+
+func preferredDesktopEntry(appDir, embeddedID, fallbackID, source string) string {
+	filename := safeDesktopID(embeddedID)
+	if filename == "" {
+		filename = fallbackID + ".desktop"
+	}
+	preferred := filepath.Join(appDir, filename)
+	data, err := os.ReadFile(preferred)
+	if errors.Is(err, os.ErrNotExist) || (err == nil && desktopEntryBelongsTo(data, source)) {
+		return preferred
+	}
+	return filepath.Join(appDir, fallbackID+".desktop")
+}
+
+func desktopEntryBelongsTo(data []byte, source string) bool {
+	needle := "X-AppImage-Source=" + cleanDesktopValue(source)
+	for _, line := range strings.Split(string(data), "\n") {
+		if strings.TrimSpace(line) == needle {
+			return true
+		}
+	}
+	return false
+}
+
+func cleanupPreviousIntegration(previous, current appMetadata, p paths) {
+	if previous.ID != current.ID {
+		return
+	}
+	if previous.DesktopFile != "" && previous.DesktopFile != current.DesktopFile && isWithin(previous.DesktopFile, p.appEntries) {
+		_ = os.Remove(previous.DesktopFile)
+	}
+	oldIcons := previous.Icons
+	if len(oldIcons) == 0 && previous.Icon != "" {
+		oldIcons = []string{previous.Icon}
+	}
+	currentIcons := make(map[string]bool, len(current.Icons))
+	for _, path := range current.Icons {
+		currentIcons[path] = true
+	}
+	for _, path := range oldIcons {
+		if !currentIcons[path] && isWithin(path, filepath.Join(p.dataHome, "icons")) {
+			_ = os.Remove(path)
+		}
+	}
 }
 
 func setupCommand(args []string) error {
@@ -712,7 +902,8 @@ func writeHandlerFiles(binary, dataRoot string) error {
 	if err := os.MkdirAll(metainfoDir, 0o755); err != nil {
 		return err
 	}
-	if err := writeAtomic(filepath.Join(iconDir, "auremi.png"), auremiLogo, 0o644); err != nil {
+	iconPath := filepath.Join(iconDir, "auremi.png")
+	if err := writeAtomic(iconPath, auremiLogo, 0o644); err != nil {
 		return err
 	}
 	desktop := fmt.Sprintf(`[Desktop Entry]
@@ -723,11 +914,11 @@ Comment=Integrate an AppImage into the Linux desktop with Aurémi
 Comment[fr]=Intégrer une AppImage au bureau Linux avec Aurémi
 Exec=%s integrate %%f
 TryExec=%s
-Icon=auremi
+Icon=%s
 Terminal=false
 NoDisplay=true
 MimeType=application/vnd.appimage;application/x-iso9660-appimage;
-`, quoteExec(binary), cleanDesktopValue(binary))
+`, quoteExec(binary), cleanDesktopValue(binary), cleanDesktopValue(iconPath))
 	if err := writeAtomic(filepath.Join(apps, handlerID), []byte(desktop), 0o644); err != nil {
 		return err
 	}
@@ -739,13 +930,13 @@ Comment=Install and integrate AppImages with a double-click
 Comment[fr]=Installer et intégrer des AppImage par un double-clic
 Exec=%s welcome
 TryExec=%s
-Icon=auremi
+Icon=%s
 Terminal=false
 StartupNotify=true
 Categories=Utility;
 Keywords=AppImage;Installer;Integration;
 Keywords[fr]=AppImage;Installation;Intégration;
-`, quoteExec(binary), cleanDesktopValue(binary))
+`, quoteExec(binary), cleanDesktopValue(binary), cleanDesktopValue(iconPath))
 	if err := writeAtomic(filepath.Join(apps, launcherID), []byte(launcher), 0o644); err != nil {
 		return err
 	}
@@ -865,8 +1056,14 @@ func removeCommand(args []string) error {
 		return errors.New("invalid launcher path in metadata")
 	}
 	_ = os.Remove(m.DesktopFile)
-	if m.Icon != "" && isWithin(m.Icon, filepath.Join(p.dataHome, "icons")) {
-		_ = os.Remove(m.Icon)
+	icons := m.Icons
+	if len(icons) == 0 && m.Icon != "" {
+		icons = []string{m.Icon}
+	}
+	for _, icon := range icons {
+		if isWithin(icon, filepath.Join(p.dataHome, "icons")) {
+			_ = os.Remove(icon)
+		}
 	}
 	if p.desktopDir != "" {
 		_ = os.Remove(filepath.Join(p.desktopDir, safeDesktopFilename(m.Name)+".desktop"))
@@ -1113,6 +1310,20 @@ func runOptional(name string, args ...string) {
 	cmd.Stdout = io.Discard
 	cmd.Stderr = io.Discard
 	_ = cmd.Run()
+}
+
+func installedAuremiIcon() string {
+	var candidates []string
+	if p, err := userPaths(); err == nil {
+		candidates = append(candidates, filepath.Join(p.dataHome, "icons", "hicolor", "512x512", "apps", "auremi.png"))
+	}
+	candidates = append(candidates, "/usr/share/icons/hicolor/512x512/apps/auremi.png")
+	for _, candidate := range candidates {
+		if info, err := os.Stat(candidate); err == nil && info.Mode().IsRegular() {
+			return candidate
+		}
+	}
+	return "auremi"
 }
 
 func notify(title, body, icon string) {

@@ -6,6 +6,20 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.2] — 2026-10-07
+
+### Fixed
+
+- Preserved safe embedded desktop-file IDs so Wayland compositors can associate running windows with their launchers and icons.
+- Selected icons by the name declared in AppImage metadata instead of unrelated image size, including extensionless `.DirIcon` files and symlinks.
+- Installed every available size of the selected icon and used absolute icon paths for reliable display across desktop environments.
+- Removed obsolete icon variants when reintegrating or uninstalling an application and refreshed icon caches after native package removal.
+
+### Security
+
+- Added keyless Sigstore signatures and public verification bundles for every release executable, archive, native package, and checksum file.
+- Made the release workflow verify every signature before publishing and pinned the Cosign installer action to an immutable commit.
+
 ## [0.3.1] — 2026-10-07
 
 ### Changed
@@ -54,7 +68,8 @@ The project follows [Semantic Versioning](https://semver.org/).
 - Automated tagged releases through GitHub Actions.
 - SHA-256 checksums for release assets.
 
-[Unreleased]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.1.0...v0.2.0

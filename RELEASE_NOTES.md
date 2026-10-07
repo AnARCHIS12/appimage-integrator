@@ -1,23 +1,17 @@
-# Aurémi 0.3.1
+# Aurémi 0.3.2
 
-This release completes Aurémi's internationalization baseline by making English the default language throughout the application.
+This release fixes incorrect or missing application icons and improves launcher matching on Wayland and other Freedesktop-compatible desktops. Release downloads are now cryptographically signed with Sigstore.
 
 ## Highlights
 
-- English CLI help, commands, errors, notifications, status messages, generated launchers, and MIME descriptions.
-- English remains the universal fallback regardless of the Linux distribution.
-- French is available only as an explicit locale-aware translation for graphical onboarding and desktop metadata.
-- Validated AppStream metadata for Discover, GNOME Software, and compatible software centers.
-- The official Aurémi name, logo, description, license, links, and release information in package pages.
-- Double-clickable `.deb` and `.rpm` packages for AMD64 and ARM64.
-- A universal graphical installer for other Linux distributions.
-- Automatic AppImage integration into the application menu.
-- Application name and icon extraction without launching the AppImage.
-- Optional desktop shortcuts.
-- Original downloaded files are always preserved.
-- Commands to list and remove managed applications.
-- Statically linked Linux binaries for AMD64 and ARM64.
-- Support for KDE Plasma, GNOME, Cinnamon, XFCE, MATE, LXQt, and other Freedesktop-compatible environments.
+- Preserves the embedded desktop-file ID so Wayland compositors can associate running windows with the correct launcher and icon.
+- Selects the icon declared by the AppImage instead of an unrelated large image from the bundle.
+- Recognizes extensionless `.DirIcon` files, symlinked icons, SVG, PNG, and XPM assets.
+- Installs all useful resolutions and uses a reliable absolute icon path across desktop environments.
+- Cleans obsolete icon variants when an application is reintegrated or removed.
+- Uses the installed Aurémi logo directly in generated and native-package launchers.
+- Signs every executable, installer archive, DEB, RPM, and checksum file with keyless Sigstore signing.
+- Publishes a `.sigstore.json` verification bundle beside every signed download.
 
 ## Downloads
 
@@ -30,3 +24,5 @@ Most computers use AMD64. ARM64 packages are also provided.
 After installation, open **Aurémi** from the application menu for a short getting-started guide, or simply double-click an AppImage.
 
 Use `SHA256SUMS` to verify downloaded assets.
+
+For cryptographic provenance verification, download the matching `.sigstore.json` file and follow the Cosign command in the README. The signature proves that the artifact was produced by Aurémi's tagged GitHub release workflow.
