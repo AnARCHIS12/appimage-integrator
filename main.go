@@ -31,12 +31,17 @@ import (
 const (
 	programName = "appimage-integrator"
 	productName = "Aurémi"
-	version     = "0.2.0"
+	version     = "0.3.0"
 	handlerID   = "appimage-integrator-handler.desktop"
+	launcherID  = "io.github.anarchis12.auremi.desktop"
+	metainfoID  = "io.github.anarchis12.auremi.metainfo.xml"
 )
 
 //go:embed assets/auremi-logo-512.png
 var auremiLogo []byte
+
+//go:embed packaging/io.github.anarchis12.auremi.metainfo.xml
+var auremiMetainfo []byte
 
 type appMetadata struct {
 	ID          string `json:"id"`
@@ -77,13 +82,15 @@ func main() {
 
 func run(args []string) error {
 	if len(args) == 0 {
-		return usageError()
+		return welcomeCommand()
 	}
 	switch args[0] {
 	case "integrate", "install":
 		return integrateCommand(args[1:])
 	case "setup":
 		return setupCommand(args[1:])
+	case "welcome":
+		return welcomeCommand()
 	case "list":
 		return listCommand()
 	case "remove", "uninstall":
@@ -119,6 +126,32 @@ Utilisation :
 
 L'intégration ne lance jamais l'AppImage et ne supprime jamais le fichier source.
 `, programName, version, programName, programName, programName, programName, programName)
+}
+
+func welcomeCommand() error {
+	message := "Aurémi is ready.\n\nTo install an AppImage:\n1. Download the .AppImage file.\n2. Double-click it.\n3. Aurémi adds it to your application menu and desktop.\n\nThe original downloaded file is always preserved."
+	if strings.HasPrefix(strings.ToLower(os.Getenv("LANG")), "fr") {
+		message = "Aurémi est prêt.\n\nPour installer une AppImage :\n1. Téléchargez le fichier .AppImage.\n2. Double-cliquez dessus.\n3. Aurémi l’ajoute au menu des applications et au Bureau.\n\nLe fichier téléchargé d’origine est toujours conservé."
+	}
+	if os.Getenv("AUREMI_NO_DIALOG") == "1" {
+		fmt.Println(message)
+		return nil
+	}
+	if path, err := exec.LookPath("kdialog"); err == nil {
+		return exec.Command(path, "--title", productName, "--icon", "auremi", "--msgbox", message).Run()
+	}
+	if path, err := exec.LookPath("zenity"); err == nil {
+		return exec.Command(path, "--info", "--title="+productName, "--icon-name=auremi", "--text="+message).Run()
+	}
+	if path, err := exec.LookPath("yad"); err == nil {
+		return exec.Command(path, "--info", "--title="+productName, "--window-icon=auremi", "--text="+message, "--button=OK:0").Run()
+	}
+	if path, err := exec.LookPath("xmessage"); err == nil {
+		return exec.Command(path, "-center", "-title", productName, "-buttons", "OK:0", message).Run()
+	}
+	notify(productName, message, "auremi")
+	fmt.Println(message)
+	return nil
 }
 
 func integrateCommand(args []string) error {
@@ -666,6 +699,7 @@ func writeHandlerFiles(binary, dataRoot string) error {
 	apps := filepath.Join(dataRoot, "applications")
 	mimePackages := filepath.Join(dataRoot, "mime", "packages")
 	iconDir := filepath.Join(dataRoot, "icons", "hicolor", "512x512", "apps")
+	metainfoDir := filepath.Join(dataRoot, "metainfo")
 	if err := os.MkdirAll(apps, 0o755); err != nil {
 		return err
 	}
@@ -673,6 +707,9 @@ func writeHandlerFiles(binary, dataRoot string) error {
 		return err
 	}
 	if err := os.MkdirAll(iconDir, 0o755); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(metainfoDir, 0o755); err != nil {
 		return err
 	}
 	if err := writeAtomic(filepath.Join(iconDir, "auremi.png"), auremiLogo, 0o644); err != nil {
@@ -690,6 +727,27 @@ NoDisplay=true
 MimeType=application/vnd.appimage;application/x-iso9660-appimage;
 `, quoteExec(binary), cleanDesktopValue(binary))
 	if err := writeAtomic(filepath.Join(apps, handlerID), []byte(desktop), 0o644); err != nil {
+		return err
+	}
+	launcher := fmt.Sprintf(`[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Aurémi
+Comment=Install and integrate AppImages with a double-click
+Comment[fr]=Installer et intégrer des AppImage par un double-clic
+Exec=%s welcome
+TryExec=%s
+Icon=auremi
+Terminal=false
+StartupNotify=true
+Categories=Utility;
+Keywords=AppImage;Installer;Integration;
+Keywords[fr]=AppImage;Installation;Intégration;
+`, quoteExec(binary), cleanDesktopValue(binary))
+	if err := writeAtomic(filepath.Join(apps, launcherID), []byte(launcher), 0o644); err != nil {
+		return err
+	}
+	if err := writeAtomic(filepath.Join(metainfoDir, metainfoID), auremiMetainfo, 0o644); err != nil {
 		return err
 	}
 	return writeAtomic(filepath.Join(mimePackages, "appimage-integrator.xml"), []byte(mimeXML), 0o644)

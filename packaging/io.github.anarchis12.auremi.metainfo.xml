@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.anarchis12.auremi</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Aurémi</name>
+  <summary>Install and integrate AppImages with a double-click</summary>
+  <summary xml:lang="fr">Installer et intégrer des AppImage par un double-clic</summary>
+  <description>
+    <p>Aurémi turns downloaded AppImages into properly integrated Linux desktop applications without requiring terminal commands.</p>
+    <p xml:lang="fr">Aurémi transforme les AppImage téléchargées en applications Linux correctement intégrées, sans nécessiter de commandes dans un terminal.</p>
+    <ul>
+      <li>Adds applications to the application menu and desktop</li>
+      <li>Extracts names and icons without launching the AppImage</li>
+      <li>Preserves the original downloaded file</li>
+      <li>Supports AMD64 and ARM64 Linux systems</li>
+    </ul>
+  </description>
+  <launchable type="desktop-id">io.github.anarchis12.auremi.desktop</launchable>
+  <icon type="stock">auremi</icon>
+  <provides>
+    <binary>appimage-integrator</binary>
+  </provides>
+  <categories>
+    <category>Utility</category>
+  </categories>
+  <url type="homepage">https://github.com/AnARCHIS12/appimage-integrator</url>
+  <url type="bugtracker">https://github.com/AnARCHIS12/appimage-integrator/issues</url>
+  <url type="vcs-browser">https://github.com/AnARCHIS12/appimage-integrator</url>
+  <developer id="io.github.anarchis12">
+    <name>AnARCHIS12</name>
+  </developer>
+  <releases>
+    <release version="0.3.0" date="2026-10-07">
+      <description>
+        <p>Adds a complete AppStream software-center page and an onboarding launcher.</p>
+      </description>
+    </release>
+  </releases>
+  <content_rating type="oars-1.1"/>
+</component>

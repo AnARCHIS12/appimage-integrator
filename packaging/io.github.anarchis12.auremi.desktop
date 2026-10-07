@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Aurémi
+Comment=Install and integrate AppImages with a double-click
+Comment[fr]=Installer et intégrer des AppImage par un double-clic
+Exec=/usr/bin/appimage-integrator welcome
+TryExec=/usr/bin/appimage-integrator
+Icon=auremi
+Terminal=false
+StartupNotify=true
+Categories=Utility;
+Keywords=AppImage;Installer;Integration;
+Keywords[fr]=AppImage;Installation;Intégration;

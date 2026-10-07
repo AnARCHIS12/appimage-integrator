@@ -1,15 +1,16 @@
-# Aurémi 0.2.0
+# Aurémi 0.3.0
 
-This release makes installing Aurémi itself as simple as using it.
+This release makes Aurémi understandable immediately after installation and gives it a complete software-center identity.
 
 ## Highlights
 
-- Double-clickable `.deb` packages for Debian, Ubuntu, and Linux Mint.
-- Double-clickable `.rpm` packages for Fedora and openSUSE.
-- A redesigned universal installer bundle with an **Install Aurémi** launcher, icon, and short instructions.
-- Clear graphical success and error messages across KDE, GNOME, and lightweight desktops.
-- Native dialog support through KDialog, Zenity, Yad, and XMessage.
-- No terminal or administrator password required when using the universal per-user installer.
+- Validated AppStream metadata for Discover, GNOME Software, and compatible software centers.
+- The official Aurémi name, logo, description, license, links, and release information in package pages.
+- A visible Aurémi entry in the application menu.
+- A localized welcome window that explains the AppImage installation workflow.
+- English and French desktop metadata.
+- Double-clickable `.deb` and `.rpm` packages for AMD64 and ARM64.
+- A universal graphical installer for other Linux distributions.
 - Automatic AppImage integration into the application menu.
 - Application name and icon extraction without launching the AppImage.
 - Optional desktop shortcuts.
@@ -25,5 +26,7 @@ This release makes installing Aurémi itself as simple as using it.
 - **Other distributions:** choose the universal `Auremi-Installer` archive for your processor.
 
 Most computers use AMD64. ARM64 packages are also provided.
+
+After installation, open **Aurémi** from the application menu for a short getting-started guide, or simply double-click an AppImage.
 
 Use `SHA256SUMS` to verify downloaded assets.

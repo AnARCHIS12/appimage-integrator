@@ -30,6 +30,8 @@ AppImages are portable, but integrating them into a Linux desktop is still unnec
 Aurémi handles that workflow automatically while keeping the original download untouched.
 
 - **One-time setup:** install Aurémi once, then double-click AppImages.
+- **Clear onboarding:** open Aurémi from the application menu to see what to do next.
+- **Software-center metadata:** proper name, logo, description, license, and release details through AppStream.
 - **Desktop integration:** application-menu entry, icon, and desktop shortcut.
 - **No AppImage execution during inspection:** metadata is read without launching the application.
 - **No root access for daily use:** applications are installed inside the current user's home directory.
@@ -47,6 +49,8 @@ Aurémi handles that workflow automatically while keeping the original download 
 3. Select **Install** in your distribution's software manager.
 
 The native package registers Aurémi for every account on the computer. The software manager may request an administrator password, just like any other system package.
+
+After installation, Aurémi appears in the application menu with its official logo. Open it for a short getting-started guide, or double-click an AppImage immediately.
 
 ### Universal graphical installer
 
@@ -75,7 +79,7 @@ chmod +x appimage-integrator-linux-amd64
 sudo ./appimage-integrator-linux-amd64 setup --system
 ```
 
-The system-wide setup installs only the handler globally. AppImages are still integrated separately inside each user's home directory.
+The system-wide setup installs the handler, menu entry, icon, and AppStream metadata globally. AppImages are still integrated separately inside each user's home directory.
 
 ## How it works
 
@@ -213,6 +217,8 @@ Per-user Aurémi installation:
 
 - Binary: `~/.local/bin/appimage-integrator`
 - File handler: `~/.local/share/applications/appimage-integrator-handler.desktop`
+- Welcome launcher: `~/.local/share/applications/io.github.anarchis12.auremi.desktop`
+- AppStream metadata: `~/.local/share/metainfo/io.github.anarchis12.auremi.metainfo.xml`
 - MIME definition: `~/.local/share/mime/packages/appimage-integrator.xml`
 
 Integrated applications:

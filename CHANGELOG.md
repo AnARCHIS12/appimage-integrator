@@ -6,6 +6,15 @@ The project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-10-07
+
+### Added
+
+- Validated AppStream metadata for Discover, GNOME Software, and other Linux software centers.
+- A visible Aurémi application-menu entry using the official logo.
+- A localized onboarding window explaining how to install an AppImage after setup.
+- Software-center metadata for the project name, description, license, links, release, and supported architecture-independent features.
+
 ## [0.2.0] — 2026-10-07
 
 ### Added
@@ -37,6 +46,7 @@ The project follows [Semantic Versioning](https://semver.org/).
 - Automated tagged releases through GitHub Actions.
 - SHA-256 checksums for release assets.
 
-[Unreleased]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/AnARCHIS12/appimage-integrator/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/AnARCHIS12/appimage-integrator/releases/tag/v0.1.0

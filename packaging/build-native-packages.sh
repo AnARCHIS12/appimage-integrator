@@ -12,10 +12,13 @@ build_deb() {
     root="$dist_dir/package-deb-$go_arch"
     rm -rf "$root"
     mkdir -p "$root/DEBIAN" "$root/usr/bin" "$root/usr/share/applications" \
-        "$root/usr/share/mime/packages" "$root/usr/share/icons/hicolor/512x512/apps"
+        "$root/usr/share/mime/packages" "$root/usr/share/icons/hicolor/512x512/apps" \
+        "$root/usr/share/metainfo"
     install -m 0755 "$dist_dir/appimage-integrator-linux-$go_arch" "$root/usr/bin/appimage-integrator"
     install -m 0644 "$packaging_dir/appimage-integrator-handler.desktop" "$root/usr/share/applications/"
+    install -m 0644 "$packaging_dir/io.github.anarchis12.auremi.desktop" "$root/usr/share/applications/"
     install -m 0644 "$packaging_dir/appimage-integrator.xml" "$root/usr/share/mime/packages/"
+    install -m 0644 "$packaging_dir/io.github.anarchis12.auremi.metainfo.xml" "$root/usr/share/metainfo/"
     install -m 0644 "$project_dir/assets/auremi-logo-512.png" "$root/usr/share/icons/hicolor/512x512/apps/auremi.png"
     install -m 0755 "$packaging_dir/debian-postinst" "$root/DEBIAN/postinst"
     install -m 0755 "$packaging_dir/debian-postrm" "$root/DEBIAN/postrm"

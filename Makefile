@@ -1,16 +1,16 @@
 .PHONY: all binaries installers bundles native-packages packages checksums test clean install-user install-system
 
-VERSION := 0.2.0
+VERSION := 0.3.0
 
 all: checksums
 
 binaries: dist/appimage-integrator-linux-amd64 dist/appimage-integrator-linux-arm64
 
-dist/appimage-integrator-linux-amd64: main.go go.mod assets/auremi-logo-512.png
+dist/appimage-integrator-linux-amd64: main.go go.mod assets/auremi-logo-512.png packaging/io.github.anarchis12.auremi.metainfo.xml
 	mkdir -p dist
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o $@ .
 
-dist/appimage-integrator-linux-arm64: main.go go.mod assets/auremi-logo-512.png
+dist/appimage-integrator-linux-arm64: main.go go.mod assets/auremi-logo-512.png packaging/io.github.anarchis12.auremi.metainfo.xml
 	mkdir -p dist
 	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags="-s -w" -o $@ .
 
