@@ -1,111 +1,117 @@
 # Aurémi — AppImage Integrator
 
-**Aurémi** est un petit gestionnaire qui transforme un double-clic sur un fichier AppImage en installation propre. Le gestionnaire reste invisible au quotidien ; seule l’installation initiale utilise une petite boîte de dialogue.
+**Aurémi** turns a double-click on an AppImage into a clean desktop installation. It stays out of the way during normal use; only the initial setup displays a small confirmation dialog.
 
-![Logo Aurémi](assets/auremi-logo.png)
+![Aurémi logo](assets/auremi-logo.png)
 
-Il fonctionne avec les bureaux qui respectent les standards Linux/Freedesktop : KDE Plasma, GNOME, Cinnamon, XFCE, MATE, LXQt et la plupart des autres environnements.
+It follows Linux/Freedesktop standards and works with KDE Plasma, GNOME, Cinnamon, XFCE, MATE, LXQt, and most other Linux desktop environments.
 
-## Ce qu’il fait
+## What it does
 
-Lorsque vous double-cliquez sur une AppImage, AppImage Integrator :
+When you double-click an AppImage, Aurémi:
 
-1. vérifie qu’il s’agit réellement d’une AppImage ;
-2. lit son nom et son icône sans lancer l’application ;
-3. en conserve une copie exécutable dans votre dossier personnel ;
-4. crée une entrée dans le menu des applications ;
-5. crée un raccourci sur le Bureau ;
-6. affiche une notification lorsque l’installation est terminée.
+1. verifies that the file is an actual AppImage;
+2. reads its name and embedded icon without launching the application;
+3. stores an executable copy in your home directory;
+4. creates an application-menu entry;
+5. creates a desktop shortcut;
+6. displays a notification when the installation is complete.
 
-Le fichier téléchargé d’origine n’est jamais supprimé. L’AppImage n’est jamais lancée pendant son installation.
+The original downloaded file is never deleted. The AppImage itself is never launched during installation.
 
-## Installation par double-clic — la méthode la plus simple
+## Double-click installation — easiest method
 
-1. Téléchargez l’archive adaptée à votre PC : `Auremi-Installer-linux-amd64.tar.gz` pour la majorité des ordinateurs, ou `Auremi-Installer-linux-arm64.tar.gz` pour une machine ARM.
-2. Extrayez l’archive avec votre gestionnaire de fichiers.
-3. Double-cliquez sur `Auremi-Installer-linux-amd64` ou `Auremi-Installer-linux-arm64`.
-4. Cliquez sur **Installer**.
+1. Download the archive for your computer from the [latest release](https://github.com/AnARCHIS12/appimage-integrator/releases/latest):
+   - `Auremi-Installer-linux-amd64.tar.gz` for most 64-bit Intel and AMD computers;
+   - `Auremi-Installer-linux-arm64.tar.gz` for 64-bit ARM computers.
+2. Extract the archive with your file manager.
+3. Double-click `Auremi-Installer-linux-amd64` or `Auremi-Installer-linux-arm64`.
+4. Select **Install**.
 
-L’installateur affiche une boîte de dialogue native avec KDialog sur KDE, Zenity sur GNOME et les bureaux compatibles, ou une notification en dernier recours. Il installe uniquement dans votre compte et ne demande pas de mot de passe administrateur.
+The installer uses a native KDialog window on KDE, Zenity on GNOME and compatible desktops, or a desktop notification as a fallback. It installs Aurémi only for your account and does not request an administrator password.
 
-## Installation en ligne de commande
+## Command-line installation
 
-### Pour votre compte uniquement — recommandé
+### Current user only — recommended
 
-Cette méthode ne demande pas `sudo` :
+This method does not require `sudo`:
 
 ```bash
 chmod +x appimage-integrator-linux-amd64
 ./appimage-integrator-linux-amd64 setup --user
 ```
 
-Le gestionnaire est copié dans `~/.local/bin/` et enregistré uniquement pour votre compte.
+The manager is copied to `~/.local/bin/` and registered only for your account.
 
-### Pour tous les utilisateurs du PC
+### All users
 
-Cette commande modifie `/usr/local/bin`, `/usr/share` et `/etc/xdg`. Elle demande donc les droits administrateur :
+This command writes to `/usr/local/bin`, `/usr/share`, and `/etc/xdg`, so administrator privileges are required:
 
 ```bash
 chmod +x appimage-integrator-linux-amd64
 sudo ./appimage-integrator-linux-amd64 setup --system
 ```
 
-Après cette installation unique, chaque utilisateur peut intégrer ses AppImage sans `sudo`. Les applications restent séparées dans le dossier personnel de chaque utilisateur.
+After this one-time setup, every user can integrate AppImages without `sudo`. Each user's applications remain isolated in their own home directory.
 
-## Utilisation
+## Usage
 
-Après l’installation du gestionnaire, double-cliquez simplement sur un fichier portant l’extension `.AppImage`.
+After installing Aurémi, double-click any file with the `.AppImage` extension.
 
-L’application apparaîtra ensuite :
+The installed application will appear:
 
-- dans le menu des applications ;
-- sur le Bureau ;
-- dans `~/.local/share/appimage-integrator/apps/`.
+- in the application menu;
+- on the desktop;
+- under `~/.local/share/appimage-integrator/apps/`.
 
-Le premier clic installe l’AppImage. Pour la lancer, utilisez ensuite son entrée dans le menu ou son raccourci sur le Bureau.
+The first click installs the AppImage. Launch it afterward from the application menu or its desktop shortcut.
 
-### Installation manuelle
-
-```bash
-appimage-integrator integrate MonApplication.AppImage
-```
-
-Sans raccourci sur le Bureau :
+### Manual integration
 
 ```bash
-appimage-integrator integrate --no-desktop MonApplication.AppImage
+appimage-integrator integrate MyApplication.AppImage
 ```
 
-### Voir les applications gérées
+Without a desktop shortcut:
+
+```bash
+appimage-integrator integrate --no-desktop MyApplication.AppImage
+```
+
+### List managed applications
 
 ```bash
 appimage-integrator list
 ```
 
-### Désinstaller une application
+### Remove an application
 
-Repérez d’abord son identifiant avec `list`, puis :
+First find its identifier with `list`, then run:
 
 ```bash
-appimage-integrator remove appimage-mon-application
+appimage-integrator remove appimage-my-application
 ```
 
-Cette commande retire uniquement la copie gérée, l’icône et les lanceurs. Le fichier AppImage téléchargé à l’origine reste intact.
+This removes only the managed copy, icon, and launchers. The originally downloaded AppImage remains untouched.
 
-## Compatibilité Linux
+## Linux compatibility
 
-Les binaires fournis sont autonomes et ne dépendent ni de GTK, ni de Qt, ni d’une distribution particulière. Deux versions sont produites : `linux-amd64` pour les PC Intel/AMD 64 bits et `linux-arm64` pour les machines ARM 64 bits. Comme ils sont compilés statiquement, ils fonctionnent aussi bien sur les distributions utilisant glibc que sur celles utilisant musl.
+The supplied binaries are self-contained and do not depend on GTK, Qt, or a particular distribution:
 
-Le fichier `dist/SHA256SUMS` permet de vérifier que les binaires n’ont pas été modifiés :
+- `linux-amd64` supports 64-bit Intel and AMD computers;
+- `linux-arm64` supports 64-bit ARM computers.
+
+The binaries are statically linked and work on distributions based on either glibc or musl.
+
+Verify downloaded release files with:
 
 ```bash
-cd dist
 sha256sum -c SHA256SUMS
 ```
 
-La commande facultative `unsquashfs`, fournie par le paquet `squashfs-tools`, permet d’extraire le vrai nom et l’icône embarquée. Si elle n’est pas disponible, l’installation fonctionne quand même avec le nom du fichier et une icône générique.
+The optional `unsquashfs` command, provided by `squashfs-tools`, lets Aurémi extract the actual application name and embedded icon. Without it, integration still works using the filename and a generic icon.
 
-Installation facultative de `squashfs-tools` :
+Optional `squashfs-tools` installation:
 
 ```bash
 # Debian, Ubuntu, Linux Mint
@@ -114,71 +120,71 @@ sudo apt install squashfs-tools
 # Fedora
 sudo dnf install squashfs-tools
 
-# Arch, Manjaro
+# Arch Linux, Manjaro
 sudo pacman -S squashfs-tools
 
 # openSUSE
 sudo zypper install squashfs
 
-# Alpine
+# Alpine Linux
 sudo apk add squashfs-tools
 ```
 
-Les utilitaires `update-mime-database`, `update-desktop-database`, `gtk-update-icon-cache`, `kbuildsycoca6` et `notify-send` sont utilisés lorsqu’ils sont présents, mais aucun n’est obligatoire.
+The utilities `update-mime-database`, `update-desktop-database`, `gtk-update-icon-cache`, `kbuildsycoca6`, and `notify-send` are used when available, but none is mandatory.
 
-## Sécurité
+## Security
 
-AppImage Integrator réduit les risques pendant l’installation :
+Aurémi reduces installation-time risk:
 
-- il refuse les liens symboliques et les fichiers qui ne sont pas des AppImage ;
-- il ne lance jamais l’AppImage pendant l’analyse ou l’installation ;
-- il utilise `unsquashfs` pour lire les métadonnées lorsque cet outil est disponible ;
-- il écrit les fichiers de manière atomique ;
-- il ne demande jamais `sudo` pour intégrer une application dans un compte utilisateur ;
-- il ne supprime jamais le téléchargement d’origine.
+- it rejects symbolic links and files that are not valid AppImages;
+- it never launches an AppImage while inspecting or installing it;
+- it uses `unsquashfs` to read metadata when available;
+- it writes managed files atomically;
+- it never requires `sudo` to integrate an application for one user;
+- it never deletes the original download.
 
-Cela ne prouve toutefois pas qu’une AppImage est digne de confiance. Téléchargez toujours vos applications depuis leur site ou dépôt officiel et vérifiez les sommes SHA-256 publiées lorsque celles-ci existent.
+These checks do not prove that an AppImage itself is trustworthy. Always download applications from their official website or repository and verify published SHA-256 checksums when available.
 
-## Emplacements utilisés
+## File locations
 
-Installation utilisateur du gestionnaire :
+Per-user manager installation:
 
-- binaire : `~/.local/bin/appimage-integrator`
-- gestionnaire de fichiers : `~/.local/share/applications/appimage-integrator-handler.desktop`
-- définition MIME : `~/.local/share/mime/packages/appimage-integrator.xml`
+- binary: `~/.local/bin/appimage-integrator`
+- file-manager handler: `~/.local/share/applications/appimage-integrator-handler.desktop`
+- MIME definition: `~/.local/share/mime/packages/appimage-integrator.xml`
 
-Applications intégrées :
+Integrated applications:
 
-- AppImage et métadonnées : `~/.local/share/appimage-integrator/apps/`
-- lanceurs : `~/.local/share/applications/`
-- icônes : `~/.local/share/icons/hicolor/`
-- raccourcis : dossier Bureau défini par `XDG_DESKTOP_DIR`
+- AppImages and metadata: `~/.local/share/appimage-integrator/apps/`
+- launchers: `~/.local/share/applications/`
+- icons: `~/.local/share/icons/hicolor/`
+- shortcuts: the desktop directory defined by `XDG_DESKTOP_DIR`
 
-Les variables standard `XDG_DATA_HOME` et `XDG_CONFIG_HOME` sont respectées.
+The standard `XDG_DATA_HOME` and `XDG_CONFIG_HOME` environment variables are respected.
 
-## Compiler depuis les sources
+## Building from source
 
-Go 1.23 ou plus récent est nécessaire :
+Go 1.23 or newer is required:
 
 ```bash
 make test
 make
 ```
 
-Les deux binaires statiques sont créés dans `dist/`.
+Static AMD64 and ARM64 binaries and installer archives are created under `dist/`.
 
-Pour une autre architecture :
+To build the core binary for another architecture:
 
 ```bash
 CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -trimpath -ldflags="-s -w" -o dist/appimage-integrator-linux-arm64 .
 ```
 
-## Limites connues
+## Known limitations
 
-- Les AppImage de type 1 et 2 sont reconnues, mais l’extraction automatique de l’icône dépend de `unsquashfs` et d’un contenu SquashFS lisible.
-- Certains gestionnaires de fichiers demandent une première fois avec quelle application ouvrir une AppImage. Choisissez **Installer une AppImage** et cochez l’option permettant de mémoriser ce choix.
-- Une installation globale rend le gestionnaire disponible à tous, mais chaque AppImage est volontairement installée dans le compte de l’utilisateur qui clique dessus. Cela évite de demander le mot de passe administrateur à chaque application.
+- Type 1 and Type 2 AppImages are recognized, but automatic icon extraction requires `unsquashfs` and readable SquashFS content.
+- Some file managers ask which application should open an AppImage the first time. Select **Install an AppImage with Aurémi** and enable the option to remember your choice.
+- A system-wide setup makes Aurémi available to everyone, but every AppImage is deliberately installed within the account of the user who clicked it. This avoids requesting an administrator password for every application.
 
-## Licence
+## License
 
-MIT — voir `LICENSE`.
+MIT — see [LICENSE](LICENSE).
